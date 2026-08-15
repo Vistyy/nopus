@@ -2,6 +2,10 @@
 
 # nopus
 
+[![npm version](https://img.shields.io/npm/v/%40syzom%2Fnopus)](https://www.npmjs.com/package/@syzom/nopus)
+[![Node.js version](https://img.shields.io/node/v/%40syzom%2Fnopus)](package.json)
+[![MIT license](https://img.shields.io/npm/l/%40syzom%2Fnopus)](LICENSE)
+
 nopus catches coding-agent answers that disappear into abstract LLM babble.
 Using deterministic prose checks, it flags responses that cross your chosen complexity threshold and sends them back for one clearer rewrite.
 
@@ -61,7 +65,16 @@ The identifier follows the `plugin@marketplace` format, so this plugin is `nopus
 <details>
 <summary>Codex</summary>
 
+Add the marketplace from GitHub and install the plugin:
+
+```sh
+codex plugin marketplace add Vistyy/nopus
+codex plugin add nopus@nopus
+```
+
+Start a new Codex session after installation so the plugin and its skills load.
 The Codex plugin uses the same bounded Stop hook.
+The identifier follows the `plugin@marketplace` format, so this plugin is `nopus@nopus`.
 
 </details>
 
