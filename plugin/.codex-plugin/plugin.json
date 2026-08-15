@@ -1,6 +1,6 @@
 {
   "name": "nopus",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Uses deterministic prose checks to flag overly complex coding-agent responses and ask for one clearer rewrite.",
   "author": { "name": "Vistyy" },
   "interface": {

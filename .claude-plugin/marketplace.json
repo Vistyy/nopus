@@ -9,7 +9,7 @@
       "name": "nopus",
       "source": "./plugin",
       "description": "Uses deterministic prose checks to flag overly complex coding-agent responses and ask for one clearer rewrite.",
-      "version": "0.1.0"
+      "version": "1.0.0"
     }
   ]
 }

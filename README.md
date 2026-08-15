@@ -171,13 +171,7 @@ The agent still receives the rewrite instructions and focus areas.
 
 ## Choose how sensitive it should be
 
-Sensitivity controls how much evidence nopus requires before it requests a rewrite.
-It does not control how aggressively the agent rewrites the answer.
-The default is `medium`.
-
-The observed rates below come from 5,337 unique completed Pi responses in the current evaluation corpus.
-They show the rough difference between settings, not a promised rate.
-Your results will depend on the agents you use and the work you ask them to do.
+Sensitivity controls how often nopus intervenes, and the default is `medium`.
 
 | Sensitivity | What to expect | Observed rewrite rate | Best fit |
 |---|---|---:|---|
@@ -185,8 +179,7 @@ Your results will depend on the agents you use and the work you ask them to do.
 | `medium` | Catches difficulty sustained across several sentences or supported by multiple characteristics without treating isolated wording as a problem. | 9.9% | You want a balanced default for regular use. |
 | `high` | Uses lower thresholds so shorter runs of abstraction and borderline combinations can request a rewrite sooner. | 18.6% | You consistently prefer plain language and accept more interventions. |
 
-See [`evaluation/README.md`](evaluation/README.md) for the corpus and review details.
-All three settings use the same protections for technical content and the same bounded rewrite process.
+The [observed rates](evaluation/README.md) come from 5,337 completed Pi responses and provide only a rough comparison because results vary by agent and task.
 
 ## Development
 
