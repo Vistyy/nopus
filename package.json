@@ -2,7 +2,6 @@
   "name": "nopus",
   "version": "0.1.0",
   "description": "Uses deterministic prose checks to flag overly complex coding-agent responses and ask for one clearer rewrite.",
-  "private": true,
   "type": "module",
   "keywords": [
     "pi-package"
@@ -16,6 +15,14 @@
     "node": ">=22"
   },
   "packageManager": "pnpm@11.8.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vistyy/nopus.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Vistyy/nopus/issues"
+  },
+  "homepage": "https://github.com/Vistyy/nopus#readme",
   "files": [
     ".agents/plugins/marketplace.json",
     ".claude-plugin/marketplace.json",
