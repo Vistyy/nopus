@@ -11,80 +11,6 @@ Using deterministic prose checks, it flags responses that cross your chosen comp
 
 Currently supported: Pi, Claude Code, Codex
 
-## How it works
-
-nopus does not ban long answers or unusual words.
-It looks for difficulty that accumulates across a response.
-
-| nopus notices | What it can look like |
-|---|---|
-| Unnecessarily uncommon wording | “commence utilization” when “start using” means the same thing |
-| Sustained abstract phrasing | Several sentences about “capability alignment” without saying who does what |
-| Dense phrase stacks | “repository state mutation verification strategy” instead of “how we verify repository changes” |
-| Formulaic framing | “Here’s where it gets interesting” before the actual point |
-
-A single unusual word, dense phrase, or style cue does not normally trigger a rewrite.
-nopus combines independent signals and checks whether the difficulty continues through the response.
-
-Necessary technical terms, commands, identifiers, conditions, and qualifications stay intact.
-`InteractiveSessionHost` stays `InteractiveSessionHost`; nopus targets the difficult prose around it.
-Established computing terms receive less weight, and response length is not itself a failure.
-
-When nopus requests a rewrite, the host displays this message:
-
-```text
-nopus requested a clearer rewrite.
-```
-
-### What the agent receives
-
-With rewrite evidence enabled, nopus sends focused guidance and up to three examples from the response:
-
-```text
-Rewrite the response for clarity and directness.
-Keep its meaning and necessary detail.
-Return only the revised response.
-
-Focus on these areas:
-- Replace formulaic framing with plain statements.
-
-Examples from the response:
-- "here's where it gets interesting": lecture-hall framing.
-- "paradigm shift": tired.
-```
-
-<details>
-<summary>Show the same request with rewrite evidence disabled</summary>
-
-```text
-Rewrite the response for clarity and directness.
-Keep its meaning and necessary detail.
-Return only the revised response.
-
-Focus on these areas:
-- Replace formulaic framing with plain statements.
-```
-
-</details>
-
-Sensitivity changes which responses receive this instruction.
-It does not ask the agent to make a low, medium, or high rewrite.
-The detected problems determine the focus areas, while the evidence setting controls whether excerpts appear.
-
-nopus allows at most one automatic rewrite, so it cannot create a retry loop.
-
-## Choose how sensitive it should be
-
-The default is `medium`.
-
-| Sensitivity | Behavior |
-|---|---|
-| `low` | Rewrites only the strongest cases. |
-| `medium` | Rewrites sustained or compounded difficulty. |
-| `high` | Also rewrites borderline cases and consistently prefers plain language. |
-
-All three settings preserve necessary technical detail.
-
 ## Use nopus
 
 nopus requires Node.js 22 or later on `PATH`.
@@ -129,12 +55,12 @@ Add the marketplace from GitHub and install the plugin:
 
 ```text
 /plugin marketplace add Vistyy/nopus
-/plugin install nopus@vistyy
+/plugin install nopus@nopus
 ```
 
 The plugin uses a Stop hook to request one clearer response.
 Claude Code prompts for the native settings when it enables the plugin.
-The identifier follows the `plugin@marketplace` format, so this plugin is `nopus@vistyy`.
+The identifier follows the `plugin@marketplace` format, so this plugin is `nopus@nopus`.
 
 To change the settings later, use the configuration skill:
 
@@ -174,6 +100,93 @@ Rewrite evidence is enabled by default.
 `NOPUS_COMPLEXITY_SENSITIVITY` and `NOPUS_INCLUDE_EVIDENCE` override native and file configuration for automation.
 
 </details>
+
+## How it works
+
+nopus examines the prose when a coding agent completes a response.
+Its measurements are deterministic, so the same prose and sensitivity produce the same decision.
+It measures these characteristics:
+
+- **Uncommon wording** - Words that are rare in ordinary conversation.
+  - *Example:* “Commence the task” instead of “Start the task.”
+- **Very uncommon wording** - Words that are rare in both conversation and broad written English.
+  - *Example:* “Ameliorate the problem” instead of “Fix the problem.”
+- **Abstract vocabulary** - Concepts and qualities used without concrete people, objects, or actions.
+  - *Example:* “capability, strategy, governance, and ownership.”
+- **Abstract sentences** - Abstract wording that fills one sentence and continues across several sentences.
+  - *Example:* “The strategy establishes capability ownership through governance transformation.”
+- **Noun and modifier stacks** - Three or more nouns or modifiers compressed into one phrase.
+  - *Example:* “repository state mutation verification strategy.”
+- **Phrase load** - Dense phrases that appear frequently for the amount of prose.
+  - *Example:* A short answer containing both “deployment policy validation process” and “repository state mutation strategy.”
+- **Formulaic style cues** - Literal phrases that add inflated framing or filler.
+  - *Example:* “Here’s where it gets interesting.”
+
+Word rarity comes from packaged conversational and broad-web frequency data.
+Abstractness comes from human-rated word concreteness, and technical exceptions come from a packaged computing glossary.
+The style matcher uses only a small allowlist of literal cues rather than trying to classify arbitrary writing habits.
+
+nopus then looks for combinations that make a response materially harder to read.
+For example, uncommon words become more significant when they appear with sustained abstraction and dense phrase stacks.
+Several abstract sentences become more significant when loaded phrases recur throughout them.
+
+### How nopus avoids unnecessary rewrites
+
+- It removes code blocks, inline code, URLs, file paths, and table rows before measuring prose.
+- It excludes obvious identifiers and reduces the weight of established computing terms.
+- It uses proportions and phrase density, so a long response is not penalized merely for being long.
+- Most decision paths require several measurements to cross their thresholds together.
+- A single rare word or dense phrase does not normally trigger a rewrite.
+- Style cues require either two distinct cues or one cue supported by enough uncommon wording.
+- It requests at most one automatic rewrite, so it cannot create a retry loop.
+
+Necessary technical terms, commands, identifiers, conditions, and qualifications remain part of the requested answer.
+`InteractiveSessionHost` stays `InteractiveSessionHost`; nopus targets the difficult prose around it.
+
+When nopus requests a rewrite, the host displays this message:
+
+```text
+nopus requested a clearer rewrite.
+```
+
+### What the agent receives
+
+For the response used in the example below, the default rewrite request gives the agent focused guidance and examples from its own response:
+
+```text
+Rewrite the response for clarity and directness.
+Keep its meaning and necessary detail.
+Return only the revised response.
+
+Focus on these areas:
+- Replace formulaic framing with plain statements.
+
+Examples from the response:
+- "here's where it gets interesting": lecture-hall framing.
+- "paradigm shift": tired.
+```
+
+Turning rewrite evidence off removes the `Examples from the response` block.
+The agent still receives the rewrite instructions and focus areas.
+
+## Choose how sensitive it should be
+
+Sensitivity controls how much evidence nopus requires before it requests a rewrite.
+It does not control how aggressively the agent rewrites the answer.
+The default is `medium`.
+
+The observed rates below come from 5,337 unique completed Pi responses in the current evaluation corpus.
+They show the rough difference between settings, not a promised rate.
+Your results will depend on the agents you use and the work you ask them to do.
+
+| Sensitivity | What to expect | Observed rewrite rate | Best fit |
+|---|---|---:|---|
+| `low` | Uses the strictest thresholds to target clear cases where abstraction, uncommon wording, or dense phrasing accumulates strongly. | 5.3% | You want intervention only for the most difficult responses. |
+| `medium` | Catches difficulty sustained across several sentences or supported by multiple characteristics without treating isolated wording as a problem. | 9.9% | You want a balanced default for regular use. |
+| `high` | Uses lower thresholds so shorter runs of abstraction and borderline combinations can request a rewrite sooner. | 18.6% | You consistently prefer plain language and accept more interventions. |
+
+See [`evaluation/README.md`](evaluation/README.md) for the corpus and review details.
+All three settings use the same protections for technical content and the same bounded rewrite process.
 
 ## Development
 
