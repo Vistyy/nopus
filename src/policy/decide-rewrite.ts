@@ -66,7 +66,7 @@ const profiles: Record<ComplexitySensitivity, Thresholds> = {
 
 export function decideRewrite(
   metrics: DecisionMetrics,
-  complexitySensitivity: ComplexitySensitivity = "low",
+  complexitySensitivity: ComplexitySensitivity = "medium",
 ): RewriteDecision {
   const { sustained, combined, stacked, concentrated, pervasive, style } = profiles[complexitySensitivity];
   const signals: RewriteSignal[] = [];
@@ -120,7 +120,7 @@ export function decideRewrite(
 
 export function shouldRewrite(
   metrics: DecisionMetrics,
-  complexitySensitivity: ComplexitySensitivity = "low",
+  complexitySensitivity: ComplexitySensitivity = "medium",
 ): boolean {
   return decideRewrite(metrics, complexitySensitivity).rewrite;
 }

@@ -1,14 +1,14 @@
 {
-  "name": "nopus",
+  "name": "vistyy",
   "owner": {
     "name": "Vistyy"
   },
-  "description": "nopus coding-agent prose tools",
+  "description": "Uses deterministic prose checks to flag overly complex coding-agent responses and ask for one clearer rewrite.",
   "plugins": [
     {
       "name": "nopus",
       "source": "./plugin",
-      "description": "Requests clearer prose when coding-agent responses exceed the selected complexity level",
+      "description": "Uses deterministic prose checks to flag overly complex coding-agent responses and ask for one clearer rewrite.",
       "version": "0.1.0"
     }
   ]

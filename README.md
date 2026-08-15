@@ -1,231 +1,167 @@
+![nopus banner showing a speech bubble compressed into one clear word](https://raw.githubusercontent.com/Vistyy/nopus/main/assets/nopus-banner.png)
+
 # nopus
 
-nopus helps coding agents replace unnecessarily difficult prose with one clearer answer.
+nopus catches coding-agent answers that disappear into abstract LLM babble.
+Using deterministic prose checks, it flags responses that cross your chosen complexity threshold and sends them back for one clearer rewrite.
 
-It is not a grammar checker, a technical-term remover, or an AI detector.
-It looks for several kinds of complexity that become difficult when they accumulate.
+## See it in action
+
+![A real coding-agent response, the prose issues caught by nopus, and the clearer rewrite](https://raw.githubusercontent.com/Vistyy/nopus/main/assets/nopus-rewrite-example.png)
+
+Currently supported: Pi, Claude Code, Codex
+
+## How it works
+
+nopus does not ban long answers or unusual words.
+It looks for difficulty that accumulates across a response.
+
+| nopus notices | What it can look like |
+|---|---|
+| Unnecessarily uncommon wording | “commence utilization” when “start using” means the same thing |
+| Sustained abstract phrasing | Several sentences about “capability alignment” without saying who does what |
+| Dense phrase stacks | “repository state mutation verification strategy” instead of “how we verify repository changes” |
+| Formulaic framing | “Here’s where it gets interesting” before the actual point |
+
+A single unusual word, dense phrase, or style cue does not normally trigger a rewrite.
+nopus combines independent signals and checks whether the difficulty continues through the response.
+
+Necessary technical terms, commands, identifiers, conditions, and qualifications stay intact.
+`InteractiveSessionHost` stays `InteractiveSessionHost`; nopus targets the difficult prose around it.
+Established computing terms receive less weight, and response length is not itself a failure.
+
+When nopus requests a rewrite, the host displays this message:
 
 ```text
-agent response
-    -> measure the prose
-    -> combine independent signals
-    -> accept it or request a clearer version
+nopus requested a clearer rewrite.
 ```
 
-> [!IMPORTANT]
-> nopus is under active development.
-> Its low-sensitivity profile has completed an initial human calibration and is ready for dogfooding.
+### What the agent receives
 
-## See the difference
+With rewrite evidence enabled, nopus sends focused guidance and up to three examples from the response:
 
-### Before
+```text
+Rewrite the response for clarity and directness.
+Keep its meaning and necessary detail.
+Return only the revised response.
 
-> **Provisional capability:** But Why refuses to use Shared Repository State when an applied migration has changed and rejects structurally unsafe migration definitions before Submission.
+Focus on these areas:
+- Replace formulaic framing with plain statements.
 
-### After
-
-> Before submission, But Why checks applied migrations.
-> It stops if a migration changed or uses an unsafe structure.
-
-The rewrite keeps the technical meaning.
-It removes the stacked abstractions and makes the two conditions easier to find.
+Examples from the response:
+- "here's where it gets interesting": lecture-hall framing.
+- "paradigm shift": tired.
+```
 
 <details>
-<summary>Show another example</summary>
+<summary>Show the same request with rewrite evidence disabled</summary>
 
-### Before
+```text
+Rewrite the response for clarity and directness.
+Keep its meaning and necessary detail.
+Return only the revised response.
 
-> Keep `InteractiveSessionHost` as the execution seam and retain the script's independent late-activation recovery behavior.
-
-### After
-
-> Keep `InteractiveSessionHost` as the boundary that starts the session.
-> Keep the script's separate recovery behavior for sessions that activate late.
-
-Terms such as `InteractiveSessionHost` remain unchanged because they identify real code.
-The surrounding explanation becomes more direct.
+Focus on these areas:
+- Replace formulaic framing with plain statements.
+```
 
 </details>
 
-## What nopus measures
+Sensitivity changes which responses receive this instruction.
+It does not ask the agent to make a low, medium, or high rewrite.
+The detected problems determine the focus areas, while the evidence setting controls whether excerpts appear.
 
-| Signal | Question |
+nopus allows at most one automatic rewrite, so it cannot create a retry loop.
+
+## Choose how sensitive it should be
+
+The default is `medium`.
+
+| Sensitivity | Behavior |
 |---|---|
-| Conversational rarity | Does the response use many words that are uncommon in ordinary conversation? |
-| Broad-web rarity | Are enough of those words also uncommon in general written language? |
-| Technical terms | Are uncommon words established computing terms that should receive less weight? |
-| Abstract vocabulary | Does the response rely heavily on concepts rather than concrete actions or objects? |
-| Abstract sentences | Is difficult wording sustained across several sentences? |
-| Noun and modifier stacks | Are several abstract ideas compressed into one phrase? |
-| Phrase load | Do dense phrases accumulate relative to the response length? |
-| Style cues | Does the response repeatedly use inflated framing, filler, or recurring AI-writing habits? |
+| `low` | Rewrites only the strongest cases. |
+| `medium` | Rewrites sustained or compounded difficulty. |
+| `high` | Also rewrites borderline cases and consistently prefers plain language. |
 
-A single unusual word, technical phrase, or style cue should not normally cause a rewrite.
-nopus combines evidence across the response.
-The style matcher automates only a small allowlist of context-free literal cues from the source dataset.
-It does not enforce the source author's formatting bans or context-dependent preferences.
+All three settings preserve necessary technical detail.
 
-```text
-"foreign-key integrity"
-    technical and contextually useful
-    -> keep it
+## Use nopus
 
-"provisional capability boundary ownership"
-    several abstract modifiers
-    + uncommon vocabulary
-    + similar phrases elsewhere
-    -> possible rewrite
-```
+nopus requires Node.js 22 or later on `PATH`.
 
-Response length is not itself a failure.
-Current evaluation data shows almost no relationship between response length and normalized abstractness.
-nopus therefore measures ratios and phrase load instead of penalizing long answers.
+<details>
+<summary>Pi</summary>
 
-## How a decision is made
-
-```mermaid
-flowchart LR
-    A[Agent response] --> B[Tokenize and identify sentences]
-    B --> C[Measure rarity and abstraction]
-    B --> D[Find dense phrases and style cues]
-    C --> E[Downweight established technical terms]
-    D --> F[Combine evidence]
-    E --> F
-    F -->|Below the selected ceiling| G[Accept response]
-    F -->|Sustained or compounded complexity| H[Request clearer prose]
-```
-
-The repository analysis entry point is small:
-
-```ts
-const result = evaluateProse(response, {
-  complexitySensitivity: "low",
-});
-```
-
-```ts
-{
-  retry: true,
-  metrics: {
-    abstractRatio: 0.43,
-    uncommonRatio: 0.31,
-    phraseLoadPer100Words: 6.2,
-  },
-  findings: [
-    {
-      kind: "high-abstractness-sentence",
-      text: "...",
-      detail: "...",
-    },
-  ],
-}
-```
-
-This interface is implemented in `src/evaluate-prose.ts`.
-
-## Complexity sensitivity
-
-nopus will offer a small set of profiles instead of exposing many unrelated thresholds.
-
-| Sensitivity | Intended behavior |
-|---|---|
-| `low` | Catch only the highest complexity and lower the ceiling. |
-| `medium` | Catch sustained or compounded complexity. |
-| `high` | Prefer consistently plain language and catch borderline responses. |
-
-All profiles preserve necessary technical terms, commands, identifiers, conditions, and qualifications.
-
-## What happens after a rewrite?
-
-The production integrations allow at most one rewrite so that a bad policy cannot create an infinite loop.
-
-```text
-original response
-    -> difficult?
-        no  -> finish
-        yes -> request rewrite
-                 -> finish after one rewrite       [current portable policy]
-                 -> evaluate again with stored state [possible later policy]
-```
-
-A bounded second evaluation could improve strict mode, but it needs an explicit retry limit and observable host behavior.
-nopus will not retry without a bound.
-
-## Code map
-
-```text
-src/
-├── data/                  # Runtime interpretation of packaged data
-├── config/                # Shared persistent configuration
-├── hook/                  # Claude Code and Codex Stop integration
-├── pi/                    # Native Pi lifecycle integration
-├── policy/                # Low, medium, and high rewrite sensitivity
-├── analysis/              # winkNLP measurements
-└── evaluate-prose.ts      # Complete repository evaluation operation
-
-data/                     # Normalized JSON datasets used at runtime
-evaluation/               # Calibration against the earlier Python experiment
-plugin/                   # Built Pi, Claude Code, and Codex integrations
-scripts/                  # Intentional data import and verification
-tests/                    # Tests mirroring the runtime source structure
-```
-
-The target production structure separates four responsibilities:
-
-```text
-data       knows words, ratings, technical terms, and style cues
-analysis   measures the response without deciding what is acceptable
-policy     applies the selected complexity sensitivity
-hook       handles host input, continuation, and rewrite requests
-```
-
-The evaluation harness remains separate from runtime code so policy calibration does not affect the plugin interface.
-
-## Current status
-
-| Capability | Status |
-|---|---|
-| Portable tokenization, POS tags, and lemmas | Working |
-| Abstractness and phrase measurements | Working |
-| Normalized packaged datasets | Working |
-| Technical-term matcher | Working |
-| TypeScript rarity calculation | Working |
-| AI style-cue matching | Working |
-| Sensitivity profiles | Low calibrated; medium and high awaiting boundary review |
-| Pi extension | Packaged and verified against Pi 0.84.1 |
-| Production Stop hook | Packaged for Claude Code and Codex |
-| Authenticated rewrite | Verified with Pi and Codex; Claude Code intentionally not tested |
-
-## Runtime and configuration
-
-The integrations require Node.js 22 or later on `PATH`.
-The default complexity sensitivity is `low`.
-
-During Pi development, load the package directly:
+Install nopus from npm:
 
 ```sh
-pi -e /path/to/nopus
+pi install npm:nopus
 ```
 
-The Pi extension checks each completed response and queues at most one hidden rewrite continuation.
-Use `/nopus` to inspect its state.
-Use `/nopus check`, `/nopus rewrite`, `/nopus on`, or `/nopus off` while dogfooding.
-Use `/nopus low`, `/nopus medium`, `/nopus high`, or `/nopus evidence off` to update shared persistent configuration.
+You can install the GitHub repository instead:
 
-Claude Code exposes `complexitySensitivity` through its native plugin configuration.
-Use `/plugin configure nopus@nopus` to change it.
+```sh
+pi install git:github.com/Vistyy/nopus
+```
 
-Codex does not currently expose native plugin settings.
-Use the nopus configuration skill instead:
+Start Pi normally after installation.
+The extension checks each completed response.
+Use these commands while working:
+
+```text
+/nopus status
+/nopus check
+/nopus rewrite
+/nopus on
+/nopus off
+/nopus low
+/nopus medium
+/nopus high
+/nopus evidence off
+```
+
+</details>
+
+<details>
+<summary>Claude Code</summary>
+
+Add the marketplace from GitHub and install the plugin:
+
+```text
+/plugin marketplace add Vistyy/nopus
+/plugin install nopus@vistyy
+```
+
+The plugin uses a Stop hook to request one clearer response.
+Claude Code prompts for the native settings when it enables the plugin.
+The identifier follows the `plugin@marketplace` format, so this plugin is `nopus@vistyy`.
+
+To change the settings later, use the configuration skill:
+
+```text
+/nopus:nopus-configure medium
+/nopus:nopus-configure evidence off
+```
+
+</details>
+
+<details>
+<summary>Codex</summary>
+
+The Codex plugin uses the same bounded Stop hook.
+Configure it through the bundled skill:
 
 ```text
 $nopus-configure medium
 $nopus-configure evidence off
 ```
 
-Claude Code can use the same skill as `/nopus:nopus-configure medium` or `/nopus:nopus-configure evidence off`.
-The skill writes the persistent nopus configuration file at `$XDG_CONFIG_HOME/nopus/config.json`, or the platform user-configuration equivalent.
-The file contains:
+</details>
+
+<details>
+<summary>Configuration file and environment variables</summary>
+
+The configuration skill writes `$XDG_CONFIG_HOME/nopus/config.json`, or the platform user-configuration equivalent.
 
 ```json
 {
@@ -235,30 +171,26 @@ The file contains:
 ```
 
 Rewrite evidence is enabled by default.
-When enabled, nopus includes up to three relevant examples from the response without exposing metric percentages or internal labels.
-For automation, `NOPUS_COMPLEXITY_SENSITIVITY` and `NOPUS_INCLUDE_EVIDENCE` override native and file configuration.
+`NOPUS_COMPLEXITY_SENSITIVITY` and `NOPUS_INCLUDE_EVIDENCE` override native and file configuration for automation.
+
+</details>
 
 ## Development
 
-Install dependencies and run all current checks:
+Install dependencies and run all checks:
 
 ```sh
 pnpm install
 pnpm check
 ```
 
-Regenerate the parity report:
-
-```sh
-pnpm evaluate:parity
-```
-
-Update all normalized datasets from their checksum-pinned upstream sources:
+Update the normalized datasets from their checksum-pinned upstream sources:
 
 ```sh
 pnpm import:data
 ```
 
+See [`evaluation/README.md`](evaluation/README.md) for the private-corpus calibration and regression workflow.
 Normal analysis and verification do not download runtime data.
 
 <details>

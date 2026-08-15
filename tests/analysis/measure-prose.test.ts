@@ -64,5 +64,5 @@ test("low sensitivity accepts isolated metric accumulation below calibrated abst
     phraseLoadPer100Words: 4.89,
     styleCueCount: 0,
     lexicalWordCount: 92,
-  }), false);
+  }, "low"), false);
 });

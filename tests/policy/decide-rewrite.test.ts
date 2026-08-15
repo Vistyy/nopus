@@ -16,7 +16,8 @@ const borderline = {
   lexicalWordCount: 20,
 };
 
-test("sensitivity profiles increase monotonically", () => {
+test("sensitivity profiles increase monotonically and default to medium", () => {
+  assert.equal(shouldRewrite(borderline), true);
   assert.equal(shouldRewrite(borderline, "low"), false);
   assert.equal(shouldRewrite(borderline, "medium"), true);
   assert.equal(shouldRewrite(borderline, "high"), true);

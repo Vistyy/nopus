@@ -64,7 +64,7 @@ export function buildRewriteInstruction(evaluation: ProseEvaluation, includeEvid
 
 export function handleStop(
   input: StopHookInput,
-  complexitySensitivity: ComplexitySensitivity = "low",
+  complexitySensitivity: ComplexitySensitivity = "medium",
   includeEvidence = true,
 ): StopHookOutput {
   if (input.hook_event_name !== "Stop" || input.stop_hook_active === true) return {};

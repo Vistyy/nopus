@@ -12,6 +12,20 @@ function temporaryConfig(): string {
   return join(mkdtempSync(join(tmpdir(), "nopus-config-test-")), "config.json");
 }
 
+test("defaults complexity sensitivity to medium and evidence to on", () => {
+  const path = temporaryConfig();
+  assert.deepEqual(configuredNopusConfig({ NOPUS_CONFIG: path }), {
+    complexitySensitivity: "medium",
+    includeEvidence: true,
+  });
+
+  writeFileSync(path, `${JSON.stringify({ includeEvidence: false })}\n`);
+  assert.deepEqual(readNopusConfig(path), {
+    complexitySensitivity: "medium",
+    includeEvidence: false,
+  });
+});
+
 test("reads nopus configuration and defaults evidence to on", () => {
   const path = temporaryConfig();
   writeFileSync(path, `${JSON.stringify({ complexitySensitivity: "medium" })}\n`);

@@ -45,7 +45,7 @@ function evaluationSummary(evaluation: ProseEvaluation): string {
 }
 
 export default function nopusExtension(pi: ExtensionAPI): void {
-  let config: NopusConfig = { complexitySensitivity: "low", includeEvidence: true };
+  let config: NopusConfig = { complexitySensitivity: "medium", includeEvidence: true };
   let active = true;
   let rewriteQueued = false;
 

@@ -19,7 +19,7 @@ export function updateNopusConfig(
   path: string = defaultConfigPath(),
 ): ConfigUpdate {
   const config: NopusConfig = readNopusConfig(path) ?? {
-    complexitySensitivity: "low",
+    complexitySensitivity: "medium",
     includeEvidence: true,
   };
   const [first, second] = args;

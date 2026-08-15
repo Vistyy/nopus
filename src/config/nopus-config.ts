@@ -36,7 +36,7 @@ export function readNopusConfig(path: string = defaultConfigPath()): NopusConfig
   const object = value as Record<string, unknown>;
   return {
     complexitySensitivity: object.complexitySensitivity === undefined
-      ? "low"
+      ? "medium"
       : parseComplexitySensitivity(object.complexitySensitivity, `${path}: complexitySensitivity`),
     includeEvidence: object.includeEvidence === undefined
       ? true
@@ -56,7 +56,7 @@ export function configuredNopusConfig(environment: NodeJS.ProcessEnv = process.e
       ? parseComplexitySensitivity(explicitSensitivity, "NOPUS_COMPLEXITY_SENSITIVITY")
       : claudeSensitivity !== undefined
         ? parseComplexitySensitivity(claudeSensitivity, "Claude complexitySensitivity plugin option")
-        : file?.complexitySensitivity ?? "low",
+        : file?.complexitySensitivity ?? "medium",
     includeEvidence: explicitEvidence !== undefined
       ? parseIncludeEvidence(explicitEvidence, "NOPUS_INCLUDE_EVIDENCE")
       : claudeEvidence !== undefined

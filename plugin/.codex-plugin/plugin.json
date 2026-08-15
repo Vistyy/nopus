@@ -1,6 +1,15 @@
 {
   "name": "nopus",
   "version": "0.1.0",
-  "description": "Requests clearer prose when coding-agent responses exceed the selected complexity level",
-  "author": { "name": "Vistyy" }
+  "description": "Uses deterministic prose checks to flag overly complex coding-agent responses and ask for one clearer rewrite.",
+  "author": { "name": "Vistyy" },
+  "interface": {
+    "displayName": "nopus",
+    "shortDescription": "Clearer coding-agent answers, automatically.",
+    "longDescription": "Uses deterministic prose checks to flag overly complex coding-agent responses and ask for one clearer rewrite.",
+    "developerName": "Vistyy",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive"],
+    "brandColor": "#F6EEDC"
+  }
 }
