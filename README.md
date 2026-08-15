@@ -39,10 +39,6 @@ Use these commands while working:
 /nopus check
 /nopus on
 /nopus off
-/nopus low
-/nopus medium
-/nopus high
-/nopus evidence off
 ```
 
 </details>
@@ -66,38 +62,6 @@ The identifier follows the `plugin@marketplace` format, so this plugin is `nopus
 <summary>Codex</summary>
 
 The Codex plugin uses the same bounded Stop hook.
-
-</details>
-
-### User-invoked skills
-
-Every installation includes the same two user-invoked skills.
-The simplify skill rewrites the agent's preceding response whenever you request it, regardless of the selected sensitivity.
-The configuration skill changes the shared nopus settings used by the automatic integrations.
-
-| Action | Pi | Claude Code | Codex |
-|---|---|---|---|
-| Simplify the preceding response | `/skill:nopus-simplify` | `/nopus:nopus-simplify` | `$nopus-simplify` |
-| Set medium sensitivity | `/skill:nopus-configure medium` | `/nopus:nopus-configure medium` | `$nopus-configure medium` |
-| Disable rewrite evidence | `/skill:nopus-configure evidence off` | `/nopus:nopus-configure evidence off` | `$nopus-configure evidence off` |
-
-The simplify skill preserves meaning, necessary detail, technical terms, commands, identifiers, conditions, and qualifications.
-It is separate from the automatic check and does not change nopus configuration.
-
-<details>
-<summary>Configuration file and environment variables</summary>
-
-The configuration skill writes `$XDG_CONFIG_HOME/nopus/config.json`, or the platform user-configuration equivalent.
-
-```json
-{
-  "complexitySensitivity": "medium",
-  "includeEvidence": true
-}
-```
-
-Rewrite evidence is enabled by default.
-`NOPUS_COMPLEXITY_SENSITIVITY` and `NOPUS_INCLUDE_EVIDENCE` override the configuration file for automation.
 
 </details>
 
@@ -180,6 +144,45 @@ Sensitivity controls how often nopus intervenes, and the default is `medium`.
 | `high` | Uses lower thresholds so shorter runs of abstraction and borderline combinations can request a rewrite sooner. | 18.6% | You consistently prefer plain language and accept more interventions. |
 
 The [observed rates](evaluation/README.md) come from 5,337 completed Pi responses and provide only a rough comparison because results vary by agent and task.
+
+## Configure automatic rewrites
+
+`nopus-configure` changes the sensitivity and rewrite-evidence settings used by the automatic integrations.
+It does not rewrite a response.
+
+| Action | Pi | Claude Code | Codex |
+|---|---|---|---|
+| Set medium sensitivity | `/skill:nopus-configure medium` | `/nopus:nopus-configure medium` | `$nopus-configure medium` |
+| Disable rewrite evidence | `/skill:nopus-configure evidence off` | `/nopus:nopus-configure evidence off` | `$nopus-configure evidence off` |
+
+<details>
+<summary>Configuration file and environment variables</summary>
+
+The configuration skill writes `$XDG_CONFIG_HOME/nopus/config.json`, or the platform user-configuration equivalent.
+
+```json
+{
+  "complexitySensitivity": "medium",
+  "includeEvidence": true
+}
+```
+
+Rewrite evidence is enabled by default.
+`NOPUS_COMPLEXITY_SENSITIVITY` and `NOPUS_INCLUDE_EVIDENCE` override the configuration file for automation.
+
+</details>
+
+## Simplify a response manually
+
+`nopus-simplify` is the manual counterpart to the automatic rewrite.
+Use it when nopus does not trigger but you still find the preceding response too complex.
+Invoking the skill requests a rewrite immediately instead of applying the selected sensitivity threshold.
+It uses the same clarity goals as the automatic rewrite and preserves meaning, necessary detail, technical terms, commands, identifiers, conditions, and qualifications.
+It does not change nopus configuration.
+
+| Pi | Claude Code | Codex |
+|---|---|---|
+| `/skill:nopus-simplify` | `/nopus:nopus-simplify` | `$nopus-simplify` |
 
 ## Development
 
