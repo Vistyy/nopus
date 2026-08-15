@@ -21,7 +21,7 @@ To use nopus, install Node.js 22 or newer and make sure the `node` command is av
 Install nopus from npm:
 
 ```sh
-pi install npm:nopus
+pi install npm:@syzom/nopus
 ```
 
 You can install the GitHub repository instead:

@@ -1,5 +1,5 @@
 {
-  "name": "nopus",
+  "name": "@syzom/nopus",
   "version": "1.0.0",
   "license": "MIT",
   "description": "Uses deterministic prose checks to flag overly complex coding-agent responses and ask for one clearer rewrite.",
