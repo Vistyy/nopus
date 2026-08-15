@@ -75,7 +75,7 @@ const html = `<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nopus calibration review</title>
+  <title>nopus calibration review</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
@@ -96,7 +96,7 @@ const html = `<!doctype html>
       <div class="card-body gap-3 p-4 sm:p-6">
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Nopus calibration</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">nopus calibration</p>
             <h1 class="text-2xl font-bold sm:text-3xl">Should low sensitivity rewrite this response?</h1>
             <p class="mt-1 max-w-3xl text-sm opacity-75">Judge accumulated prose difficulty. Length and necessary technical terms are not failures.</p>
           </div>
@@ -145,7 +145,7 @@ const html = `<!doctype html>
         </label>
 
         <details class="collapse collapse-arrow border border-base-content/10 bg-base-200">
-          <summary class="collapse-title font-medium">Reveal Nopus decisions and measurements</summary>
+          <summary class="collapse-title font-medium">Reveal nopus decisions and measurements</summary>
           <div class="collapse-content grid gap-3 lg:grid-cols-2">
             <div>
               <h2 class="mb-2 font-semibold">Decisions</h2>
@@ -266,10 +266,10 @@ const html = `<!doctype html>
         return;
       }
       window.lavish.queuePrompt(
-        "Record and apply these user-approved Nopus calibration labels: " + JSON.stringify(completed),
+        "Record and apply these user-approved nopus calibration labels: " + JSON.stringify(completed),
         {
           tag: "calibration-labels",
-          text: "Nopus calibration: " + completed.length + " labels",
+          text: "nopus calibration: " + completed.length + " labels",
           queueKey: "nopus-calibration-labels",
           element: byId("queue-labels"),
           data: { labels: completed },

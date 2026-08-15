@@ -3,7 +3,7 @@
   "owner": {
     "name": "Vistyy"
   },
-  "description": "Nopus coding-agent prose tools",
+  "description": "nopus coding-agent prose tools",
   "plugins": [
     {
       "name": "nopus",

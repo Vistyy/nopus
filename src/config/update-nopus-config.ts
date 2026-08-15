@@ -27,11 +27,11 @@ export function updateNopusConfig(
 
   if (first === "evidence") {
     config.includeEvidence = parseIncludeEvidence(second, "include evidence");
-    confirmation = `Nopus rewrite evidence is ${config.includeEvidence ? "on" : "off"}.`;
+    confirmation = `nopus rewrite evidence is ${config.includeEvidence ? "on" : "off"}.`;
   } else {
     const value = first === "sensitivity" ? second : first;
     config.complexitySensitivity = parseComplexitySensitivity(value, "complexity sensitivity");
-    confirmation = `Nopus complexity sensitivity is ${config.complexitySensitivity}.`;
+    confirmation = `nopus complexity sensitivity is ${config.complexitySensitivity}.`;
   }
 
   const temporaryPath = `${path}.${process.pid}.tmp`;

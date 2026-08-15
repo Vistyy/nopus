@@ -10,6 +10,7 @@ export type StopHookInput = {
 export type StopHookOutput = Record<string, never> | {
   decision: "block";
   reason: string;
+  systemMessage: string;
 };
 
 function evidenceFor(evaluation: ProseEvaluation): string[] {
@@ -70,6 +71,10 @@ export function handleStop(
   if (typeof input.last_assistant_message !== "string") return {};
   const evaluation = evaluateProse(input.last_assistant_message, { complexitySensitivity });
   return evaluation.retry
-    ? { decision: "block", reason: buildRewriteInstruction(evaluation, includeEvidence) }
+    ? {
+      decision: "block",
+      reason: buildRewriteInstruction(evaluation, includeEvidence),
+      systemMessage: "nopus requested a clearer rewrite.",
+    }
     : {};
 }

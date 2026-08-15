@@ -16,6 +16,7 @@ test("requests a rewrite with signal-derived guidance when the evaluation fails"
   });
   assert.equal(output.decision, "block");
   if (output.decision === "block") {
+    assert.equal(output.systemMessage, "nopus requested a clearer rewrite.");
     assert.match(output.reason, /Keep its meaning and necessary detail/);
     assert.match(output.reason, /Use more concrete, direct phrasing/);
     assert.match(output.reason, /Examples from the response/);

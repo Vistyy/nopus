@@ -6,7 +6,7 @@
   "userConfig": {
     "complexitySensitivity": {
       "type": "string",
-      "title": "Nopus complexity sensitivity",
+      "title": "nopus complexity sensitivity",
       "description": "Enter low, medium, or high.",
       "default": "low"
     },

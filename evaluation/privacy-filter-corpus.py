@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run OpenAI Privacy Filter over the private Nopus response corpus."""
+"""Run OpenAI Privacy Filter over the private nopus response corpus."""
 
 from __future__ import annotations
 

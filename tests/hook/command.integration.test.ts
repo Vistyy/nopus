@@ -36,8 +36,9 @@ test("the bundled Stop command evaluates a normal host request", () => {
     stop_hook_active: false,
   });
   assert.equal(result.status, 0, result.stderr);
-  const output = JSON.parse(result.stdout) as { decision?: unknown; reason?: unknown };
+  const output = JSON.parse(result.stdout) as { decision?: unknown; reason?: unknown; systemMessage?: unknown };
   assert.equal(output.decision, "block");
+  assert.equal(output.systemMessage, "nopus requested a clearer rewrite.");
   assert.match(String(output.reason), /Rewrite the response for clarity and directness/);
 });
 
@@ -51,7 +52,7 @@ test("the bundled command applies configured complexity sensitivity", () => {
   assert.equal(output.decision, "block");
 });
 
-test("the bundled command reads persistent Nopus configuration", () => {
+test("the bundled command reads persistent nopus configuration", () => {
   const path = join(mkdtempSync(join(tmpdir(), "nopus-hook-config-")), "config.json");
   writeFileSync(path, `${JSON.stringify({ complexitySensitivity: "high" })}\n`);
   const result = runHook({

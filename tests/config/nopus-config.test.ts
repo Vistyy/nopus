@@ -12,7 +12,7 @@ function temporaryConfig(): string {
   return join(mkdtempSync(join(tmpdir(), "nopus-config-test-")), "config.json");
 }
 
-test("reads Nopus configuration and defaults evidence to on", () => {
+test("reads nopus configuration and defaults evidence to on", () => {
   const path = temporaryConfig();
   writeFileSync(path, `${JSON.stringify({ complexitySensitivity: "medium" })}\n`);
   assert.deepEqual(readNopusConfig(path), {

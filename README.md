@@ -1,6 +1,6 @@
-# Nopus
+# nopus
 
-Nopus helps coding agents replace unnecessarily difficult prose with one clearer answer.
+nopus helps coding agents replace unnecessarily difficult prose with one clearer answer.
 
 It is not a grammar checker, a technical-term remover, or an AI detector.
 It looks for several kinds of complexity that become difficult when they accumulate.
@@ -13,7 +13,7 @@ agent response
 ```
 
 > [!IMPORTANT]
-> Nopus is under active development.
+> nopus is under active development.
 > Its low-sensitivity profile has completed an initial human calibration and is ready for dogfooding.
 
 ## See the difference
@@ -47,7 +47,7 @@ The surrounding explanation becomes more direct.
 
 </details>
 
-## What Nopus measures
+## What nopus measures
 
 | Signal | Question |
 |---|---|
@@ -61,7 +61,7 @@ The surrounding explanation becomes more direct.
 | Style cues | Does the response repeatedly use inflated framing, filler, or recurring AI-writing habits? |
 
 A single unusual word, technical phrase, or style cue should not normally cause a rewrite.
-Nopus combines evidence across the response.
+nopus combines evidence across the response.
 The style matcher automates only a small allowlist of context-free literal cues from the source dataset.
 It does not enforce the source author's formatting bans or context-dependent preferences.
 
@@ -79,7 +79,7 @@ It does not enforce the source author's formatting bans or context-dependent pre
 
 Response length is not itself a failure.
 Current evaluation data shows almost no relationship between response length and normalized abstractness.
-Nopus therefore measures ratios and phrase load instead of penalizing long answers.
+nopus therefore measures ratios and phrase load instead of penalizing long answers.
 
 ## How a decision is made
 
@@ -125,7 +125,7 @@ This interface is implemented in `src/evaluate-prose.ts`.
 
 ## Complexity sensitivity
 
-Nopus will offer a small set of profiles instead of exposing many unrelated thresholds.
+nopus will offer a small set of profiles instead of exposing many unrelated thresholds.
 
 | Sensitivity | Intended behavior |
 |---|---|
@@ -149,7 +149,7 @@ original response
 ```
 
 A bounded second evaluation could improve strict mode, but it needs an explicit retry limit and observable host behavior.
-Nopus will not retry without a bound.
+nopus will not retry without a bound.
 
 ## Code map
 
@@ -216,7 +216,7 @@ Claude Code exposes `complexitySensitivity` through its native plugin configurat
 Use `/plugin configure nopus@nopus` to change it.
 
 Codex does not currently expose native plugin settings.
-Use the Nopus configuration skill instead:
+Use the nopus configuration skill instead:
 
 ```text
 $nopus-configure medium
@@ -224,7 +224,7 @@ $nopus-configure evidence off
 ```
 
 Claude Code can use the same skill as `/nopus:nopus-configure medium` or `/nopus:nopus-configure evidence off`.
-The skill writes the persistent Nopus configuration file at `$XDG_CONFIG_HOME/nopus/config.json`, or the platform user-configuration equivalent.
+The skill writes the persistent nopus configuration file at `$XDG_CONFIG_HOME/nopus/config.json`, or the platform user-configuration equivalent.
 The file contains:
 
 ```json
@@ -235,7 +235,7 @@ The file contains:
 ```
 
 Rewrite evidence is enabled by default.
-When enabled, Nopus includes up to three relevant examples from the response without exposing metric percentages or internal labels.
+When enabled, nopus includes up to three relevant examples from the response without exposing metric percentages or internal labels.
 For automation, `NOPUS_COMPLEXITY_SENSITIVITY` and `NOPUS_INCLUDE_EVIDENCE` override native and file configuration.
 
 ## Development
@@ -264,7 +264,7 @@ Normal analysis and verification do not download runtime data.
 <details>
 <summary>Data sources and attribution</summary>
 
-Nopus retains normalized JSON rather than the original upstream formats.
+nopus retains normalized JSON rather than the original upstream formats.
 The SHA-256 values below identify the exact upstream copies used to produce the normalized datasets.
 
 ### Claudisms
@@ -300,6 +300,6 @@ The source copy has SHA-256 `0b4082dbd38585b0ee1fd258145b7a50592f8d0d98e5fc6b684
 The source repository is <https://github.com/carpentries/glosario>, and its archived releases are available under DOI <https://doi.org/10.5281/zenodo.13589476>.
 The source copy has SHA-256 `93a6371add7275d643cacb060ae0b65749d1ffdff329064feeaeaf7152c3715f`.
 The data is licensed under Creative Commons Attribution 4.0 International, and the license is preserved at `data/licenses/computing-glossary-CC-BY-4.0.md`.
-The Carpentries does not endorse Nopus.
+The Carpentries does not endorse nopus.
 
 </details>

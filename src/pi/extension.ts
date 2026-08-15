@@ -40,8 +40,8 @@ function latestAssistantTextFromEntries(entries: readonly unknown[]): string | u
 }
 
 function evaluationSummary(evaluation: ProseEvaluation): string {
-  if (!evaluation.retry) return "Nopus accepts the latest response.";
-  return `Nopus recommends a rewrite (${evaluation.signals.join(", ")}).`;
+  if (!evaluation.retry) return "nopus accepts the latest response.";
+  return `nopus recommends a rewrite (${evaluation.signals.join(", ")}).`;
 }
 
 export default function nopusExtension(pi: ExtensionAPI): void {
@@ -53,7 +53,7 @@ export default function nopusExtension(pi: ExtensionAPI): void {
     complexitySensitivity: config.complexitySensitivity,
   });
 
-  const queueRewrite = (evaluation: ProseEvaluation): void => {
+  const queueRewrite = (evaluation: ProseEvaluation, notify: () => void): void => {
     rewriteQueued = true;
     pi.sendMessage({
       customType: CUSTOM_TYPE,
@@ -64,30 +64,31 @@ export default function nopusExtension(pi: ExtensionAPI): void {
       deliverAs: "followUp",
       triggerTurn: true,
     });
+    notify();
   };
 
   pi.registerCommand("nopus", {
-    description: "Inspect, configure, or toggle Nopus prose rewrites",
+    description: "Inspect, configure, or toggle nopus prose rewrites",
     handler: async (rawArgs, ctx) => {
       const args = rawArgs.trim().split(/\s+/).filter(Boolean);
       const action = args[0] ?? "status";
 
       if (action === "status") {
         ctx.ui.notify(
-          `Nopus is ${active ? "on" : "off"}; sensitivity ${config.complexitySensitivity}; evidence ${config.includeEvidence ? "on" : "off"}.`,
+          `nopus is ${active ? "on" : "off"}; sensitivity ${config.complexitySensitivity}; evidence ${config.includeEvidence ? "on" : "off"}.`,
           "info",
         );
         return;
       }
       if (action === "on" || action === "off") {
         active = action === "on";
-        ctx.ui.notify(`Nopus is ${active ? "on" : "off"} for this session.`, "info");
+        ctx.ui.notify(`nopus is ${active ? "on" : "off"} for this session.`, "info");
         return;
       }
       if (action === "check" || action === "rewrite") {
         const text = latestAssistantTextFromEntries(ctx.sessionManager.getBranch());
         if (text === undefined) {
-          ctx.ui.notify("Nopus could not find a completed assistant response.", "warning");
+          ctx.ui.notify("nopus could not find a completed assistant response.", "warning");
           return;
         }
         const evaluation = evaluate(text);
@@ -96,10 +97,10 @@ export default function nopusExtension(pi: ExtensionAPI): void {
           return;
         }
         if (rewriteQueued || !ctx.isIdle()) {
-          ctx.ui.notify("Nopus cannot queue another rewrite while Pi is working.", "warning");
+          ctx.ui.notify("nopus cannot queue another rewrite while Pi is working.", "warning");
           return;
         }
-        queueRewrite(evaluation);
+        queueRewrite(evaluation, () => ctx.ui.notify("nopus requested a clearer rewrite.", "info"));
         return;
       }
       if (action === "evidence" || action === "sensitivity" || action === "low" || action === "medium" || action === "high") {
@@ -123,16 +124,18 @@ export default function nopusExtension(pi: ExtensionAPI): void {
       config = configuredNopusConfig();
     } catch (error) {
       active = false;
-      ctx.ui.notify(`Nopus is off: ${error instanceof Error ? error.message : String(error)}`, "error");
+      ctx.ui.notify(`nopus is off: ${error instanceof Error ? error.message : String(error)}`, "error");
     }
   });
 
-  pi.on("agent_end", async (event) => {
+  pi.on("agent_end", async (event, ctx) => {
     if (!active || rewriteQueued) return;
     const text = latestAssistantText(event.messages);
     if (text === undefined) return;
     const evaluation = evaluate(text);
-    if (evaluation.retry) queueRewrite(evaluation);
+    if (evaluation.retry) {
+      queueRewrite(evaluation, () => ctx.ui.notify("nopus requested a clearer rewrite.", "info"));
+    }
   });
 
   pi.on("agent_settled", async () => {

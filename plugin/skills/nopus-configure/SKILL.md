@@ -1,11 +1,11 @@
 ---
 name: nopus-configure
-description: Configure Nopus complexity sensitivity for this user.
+description: Configure nopus complexity sensitivity for this user.
 disable-model-invocation: true
 allowed-tools: Bash
 ---
 
-# Configure Nopus
+# Configure nopus
 
 Use `low`, `medium`, or `high` to change complexity sensitivity.
 Use `evidence on` or `evidence off` to control whether rewrite requests include examples from the response.

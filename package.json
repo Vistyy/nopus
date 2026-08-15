@@ -15,8 +15,16 @@
     "node": ">=22"
   },
   "packageManager": "pnpm@11.8.0",
+  "files": [
+    ".agents/plugins/marketplace.json",
+    ".claude-plugin/marketplace.json",
+    "data/licenses/",
+    "plugin/",
+    "README.md"
+  ],
   "scripts": {
-    "build": "esbuild src/hook/command.ts --bundle --platform=node --format=esm --target=node22 --minify --legal-comments=linked --outfile=plugin/dist/stop-hook.mjs && esbuild src/config/command.ts --bundle --platform=node --format=esm --target=node22 --minify --legal-comments=linked --outfile=plugin/dist/configure.mjs && esbuild src/pi/extension.ts --bundle --platform=node --format=esm --target=node22 --minify --legal-comments=linked --outfile=plugin/dist/pi-extension.mjs",
+    "build": "node scripts/build.mjs",
+    "prepack": "pnpm build",
     "import:data": "tsx scripts/import-data.ts",
     "check:data": "tsx scripts/check-data.ts",
     "check": "pnpm check:data && tsc --noEmit && pnpm build && node --import tsx --test 'tests/**/*.test.ts'",
@@ -33,10 +41,8 @@
     "esbuild": "0.28.2",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0",
-    "yaml": "2.8.1"
-  },
-  "dependencies": {
     "wink-eng-lite-web-model": "1.8.1",
-    "wink-nlp": "2.4.0"
+    "wink-nlp": "2.4.0",
+    "yaml": "2.8.1"
   }
 }

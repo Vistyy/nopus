@@ -51,14 +51,22 @@ test("extracts only a completed assistant response", () => {
   }]), undefined);
 });
 
-test("queues exactly one hidden rewrite continuation before Pi settles", async () => {
+test("queues exactly one hidden rewrite continuation and shows an informational message before Pi settles", async () => {
   const harness = extensionHarness();
-  const context = { ui: { notify() {} } };
+  const notifications: Array<{ message: string; level: string }> = [];
+  const context = {
+    ui: {
+      notify(message: string, level: string) {
+        notifications.push({ message, level });
+      },
+    },
+  };
   await harness.handlers.get("session_start")?.({}, context);
   await harness.handlers.get("agent_end")?.({ messages: [assistant(difficult)] }, context);
   await harness.handlers.get("agent_end")?.({ messages: [assistant(difficult)] }, context);
 
   assert.equal(harness.messages.length, 1);
+  assert.deepEqual(notifications, [{ message: "nopus requested a clearer rewrite.", level: "info" }]);
   assert.equal(harness.messages[0]?.message.customType, "nopus-rewrite");
   assert.equal(harness.messages[0]?.message.display, false);
   assert.deepEqual(harness.messages[0]?.options, { deliverAs: "followUp", triggerTurn: true });
@@ -81,7 +89,7 @@ test("removes old rewrite instructions from later model context", async () => {
 
 test("keeps only the current instruction during a rewrite", async () => {
   const harness = extensionHarness();
-  await harness.handlers.get("agent_end")?.({ messages: [assistant(difficult)] }, {});
+  await harness.handlers.get("agent_end")?.({ messages: [assistant(difficult)] }, { ui: { notify() {} } });
   const current = { role: "custom", customType: "nopus-rewrite", content: "current" };
   const result = await harness.handlers.get("context")?.({
     messages: [

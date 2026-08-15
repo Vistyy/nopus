@@ -113,7 +113,7 @@ test("sample and label lifecycle preserves source caps and sample identity", asy
   await assert.rejects(sampleCorpus(root, "another-seed", true), /after labels exist/);
 });
 
-test("extractCorpus excludes user input, incomplete responses, Nopus rewrites, mocks, and duplicates", async () => {
+test("extractCorpus excludes user input, incomplete responses, nopus rewrites, mocks, and duplicates", async () => {
   const temporary = await mkdtemp(join(tmpdir(), "nopus-corpus-"));
   const sessions = join(temporary, "sessions");
   const root = join(temporary, "private");
