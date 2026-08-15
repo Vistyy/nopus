@@ -1,0 +1,15 @@
+{
+  "name": "nopus",
+  "owner": {
+    "name": "Vistyy"
+  },
+  "description": "Nopus coding-agent prose tools",
+  "plugins": [
+    {
+      "name": "nopus",
+      "source": "./plugin",
+      "description": "Requests clearer prose when coding-agent responses exceed the selected complexity level",
+      "version": "0.1.0"
+    }
+  ]
+}

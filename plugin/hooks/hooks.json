@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/dist/stop-hook.mjs\"",
+            "commandWindows": "node \"${CLAUDE_PLUGIN_ROOT}\\dist\\stop-hook.mjs\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

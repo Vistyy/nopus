@@ -1,0 +1,6 @@
+{
+  "name": "nopus",
+  "version": "0.1.0",
+  "description": "Requests clearer prose when coding-agent responses exceed the selected complexity level",
+  "author": { "name": "Vistyy" }
+}

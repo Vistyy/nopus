@@ -1,0 +1,42 @@
+import { mkdirSync, renameSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
+import {
+  defaultConfigPath,
+  parseComplexitySensitivity,
+  parseIncludeEvidence,
+  readNopusConfig,
+  type NopusConfig,
+} from "./nopus-config.js";
+
+export type ConfigUpdate = {
+  config: NopusConfig;
+  confirmation: string;
+  path: string;
+};
+
+export function updateNopusConfig(
+  args: string[],
+  path: string = defaultConfigPath(),
+): ConfigUpdate {
+  const config: NopusConfig = readNopusConfig(path) ?? {
+    complexitySensitivity: "low",
+    includeEvidence: true,
+  };
+  const [first, second] = args;
+  let confirmation: string;
+
+  if (first === "evidence") {
+    config.includeEvidence = parseIncludeEvidence(second, "include evidence");
+    confirmation = `Nopus rewrite evidence is ${config.includeEvidence ? "on" : "off"}.`;
+  } else {
+    const value = first === "sensitivity" ? second : first;
+    config.complexitySensitivity = parseComplexitySensitivity(value, "complexity sensitivity");
+    confirmation = `Nopus complexity sensitivity is ${config.complexitySensitivity}.`;
+  }
+
+  const temporaryPath = `${path}.${process.pid}.tmp`;
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(temporaryPath, `${JSON.stringify(config, null, 2)}\n`, { mode: 0o600 });
+  renameSync(temporaryPath, path);
+  return { config, confirmation, path };
+}

@@ -1,0 +1,20 @@
+{
+  "name": "nopus",
+  "version": "0.1.0",
+  "description": "Requests clearer prose when coding-agent responses exceed the selected complexity level",
+  "author": { "name": "Vistyy" },
+  "userConfig": {
+    "complexitySensitivity": {
+      "type": "string",
+      "title": "Nopus complexity sensitivity",
+      "description": "Enter low, medium, or high.",
+      "default": "low"
+    },
+    "includeEvidence": {
+      "type": "boolean",
+      "title": "Include rewrite evidence",
+      "description": "Show the agent examples from its response when requesting a rewrite.",
+      "default": true
+    }
+  }
+}
