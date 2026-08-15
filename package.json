@@ -9,6 +9,9 @@
   "pi": {
     "extensions": [
       "./plugin/dist/pi-extension.mjs"
+    ],
+    "skills": [
+      "./plugin/skills"
     ]
   },
   "engines": {

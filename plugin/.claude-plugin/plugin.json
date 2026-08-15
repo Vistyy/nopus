@@ -2,19 +2,5 @@
   "name": "nopus",
   "version": "0.1.0",
   "description": "Uses deterministic prose checks to flag overly complex coding-agent responses and ask for one clearer rewrite.",
-  "author": { "name": "Vistyy" },
-  "userConfig": {
-    "complexitySensitivity": {
-      "type": "string",
-      "title": "nopus complexity sensitivity",
-      "description": "Enter low, medium, or high.",
-      "default": "medium"
-    },
-    "includeEvidence": {
-      "type": "boolean",
-      "title": "Include rewrite evidence",
-      "description": "Show the agent examples from its response when requesting a rewrite.",
-      "default": true
-    }
-  }
+  "author": { "name": "Vistyy" }
 }

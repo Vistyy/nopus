@@ -1,6 +1,6 @@
 ---
 name: nopus-configure
-description: Configure nopus complexity sensitivity for this user.
+description: Configure nopus complexity sensitivity and rewrite evidence for this user.
 disable-model-invocation: true
 allowed-tools: Bash
 ---

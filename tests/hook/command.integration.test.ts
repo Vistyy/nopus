@@ -22,8 +22,6 @@ function runHook(input: unknown, environment: NodeJS.ProcessEnv = {}) {
       NOPUS_CONFIG: join(tmpdir(), `nopus-missing-${process.pid}.json`),
       NOPUS_COMPLEXITY_SENSITIVITY: undefined,
       NOPUS_INCLUDE_EVIDENCE: undefined,
-      CLAUDE_PLUGIN_OPTION_COMPLEXITYSENSITIVITY: undefined,
-      CLAUDE_PLUGIN_OPTION_INCLUDEEVIDENCE: undefined,
       ...environment,
     },
   });
@@ -59,16 +57,6 @@ test("the bundled command reads persistent nopus configuration", () => {
     hook_event_name: "Stop",
     last_assistant_message: "Here's where it gets interesting. This paradigm shift changes the execution boundary.",
   }, { NOPUS_CONFIG: path });
-  assert.equal(result.status, 0, result.stderr);
-  const output = JSON.parse(result.stdout) as { decision?: unknown };
-  assert.equal(output.decision, "block");
-});
-
-test("the bundled command reads Claude's native plugin option", () => {
-  const result = runHook({
-    hook_event_name: "Stop",
-    last_assistant_message: "Here's where it gets interesting. This paradigm shift changes the execution boundary.",
-  }, { CLAUDE_PLUGIN_OPTION_COMPLEXITYSENSITIVITY: "high" });
   assert.equal(result.status, 0, result.stderr);
   const output = JSON.parse(result.stdout) as { decision?: unknown };
   assert.equal(output.decision, "block");

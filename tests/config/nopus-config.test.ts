@@ -39,14 +39,13 @@ test("reads nopus configuration and defaults evidence to on", () => {
   });
 });
 
-test("native and explicit settings take precedence over the fallback file", () => {
+test("explicit settings take precedence over the fallback file", () => {
   const path = temporaryConfig();
   writeFileSync(path, `${JSON.stringify({ complexitySensitivity: "low", includeEvidence: true })}\n`);
   assert.deepEqual(configuredNopusConfig({
     NOPUS_CONFIG: path,
-    CLAUDE_PLUGIN_OPTION_COMPLEXITYSENSITIVITY: "medium",
-    CLAUDE_PLUGIN_OPTION_INCLUDEEVIDENCE: "false",
     NOPUS_COMPLEXITY_SENSITIVITY: "high",
+    NOPUS_INCLUDE_EVIDENCE: "false",
   }), {
     complexitySensitivity: "high",
     includeEvidence: false,

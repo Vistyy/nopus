@@ -13,7 +13,7 @@ Currently supported: Pi, Claude Code, Codex
 
 ## Use nopus
 
-nopus requires Node.js 22 or later on `PATH`.
+To use nopus, install Node.js 22 or newer and make sure the `node` command is available.
 
 <details>
 <summary>Pi</summary>
@@ -37,7 +37,6 @@ Use these commands while working:
 ```text
 /nopus status
 /nopus check
-/nopus rewrite
 /nopus on
 /nopus off
 /nopus low
@@ -59,15 +58,7 @@ Add the marketplace from GitHub and install the plugin:
 ```
 
 The plugin uses a Stop hook to request one clearer response.
-Claude Code prompts for the native settings when it enables the plugin.
 The identifier follows the `plugin@marketplace` format, so this plugin is `nopus@nopus`.
-
-To change the settings later, use the configuration skill:
-
-```text
-/nopus:nopus-configure medium
-/nopus:nopus-configure evidence off
-```
 
 </details>
 
@@ -75,14 +66,23 @@ To change the settings later, use the configuration skill:
 <summary>Codex</summary>
 
 The Codex plugin uses the same bounded Stop hook.
-Configure it through the bundled skill:
-
-```text
-$nopus-configure medium
-$nopus-configure evidence off
-```
 
 </details>
+
+### User-invoked skills
+
+Every installation includes the same two user-invoked skills.
+The simplify skill rewrites the agent's preceding response whenever you request it, regardless of the selected sensitivity.
+The configuration skill changes the shared nopus settings used by the automatic integrations.
+
+| Action | Pi | Claude Code | Codex |
+|---|---|---|---|
+| Simplify the preceding response | `/skill:nopus-simplify` | `/nopus:nopus-simplify` | `$nopus-simplify` |
+| Set medium sensitivity | `/skill:nopus-configure medium` | `/nopus:nopus-configure medium` | `$nopus-configure medium` |
+| Disable rewrite evidence | `/skill:nopus-configure evidence off` | `/nopus:nopus-configure evidence off` | `$nopus-configure evidence off` |
+
+The simplify skill preserves meaning, necessary detail, technical terms, commands, identifiers, conditions, and qualifications.
+It is separate from the automatic check and does not change nopus configuration.
 
 <details>
 <summary>Configuration file and environment variables</summary>
@@ -97,7 +97,7 @@ The configuration skill writes `$XDG_CONFIG_HOME/nopus/config.json`, or the plat
 ```
 
 Rewrite evidence is enabled by default.
-`NOPUS_COMPLEXITY_SENSITIVITY` and `NOPUS_INCLUDE_EVIDENCE` override native and file configuration for automation.
+`NOPUS_COMPLEXITY_SENSITIVITY` and `NOPUS_INCLUDE_EVIDENCE` override the configuration file for automation.
 
 </details>
 

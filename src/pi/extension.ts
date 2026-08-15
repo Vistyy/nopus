@@ -85,22 +85,14 @@ export default function nopusExtension(pi: ExtensionAPI): void {
         ctx.ui.notify(`nopus is ${active ? "on" : "off"} for this session.`, "info");
         return;
       }
-      if (action === "check" || action === "rewrite") {
+      if (action === "check") {
         const text = latestAssistantTextFromEntries(ctx.sessionManager.getBranch());
         if (text === undefined) {
           ctx.ui.notify("nopus could not find a completed assistant response.", "warning");
           return;
         }
         const evaluation = evaluate(text);
-        if (action === "check") {
-          ctx.ui.notify(evaluationSummary(evaluation), evaluation.retry ? "warning" : "info");
-          return;
-        }
-        if (rewriteQueued || !ctx.isIdle()) {
-          ctx.ui.notify("nopus cannot queue another rewrite while Pi is working.", "warning");
-          return;
-        }
-        queueRewrite(evaluation, () => ctx.ui.notify("nopus requested a clearer rewrite.", "info"));
+        ctx.ui.notify(evaluationSummary(evaluation), evaluation.retry ? "warning" : "info");
         return;
       }
       if (action === "evidence" || action === "sensitivity" || action === "low" || action === "medium" || action === "high") {
@@ -113,7 +105,7 @@ export default function nopusExtension(pi: ExtensionAPI): void {
         }
         return;
       }
-      ctx.ui.notify("Usage: /nopus [status|on|off|check|rewrite|low|medium|high|sensitivity LEVEL|evidence on|off]", "warning");
+      ctx.ui.notify("Usage: /nopus [status|on|off|check|low|medium|high|sensitivity LEVEL|evidence on|off]", "warning");
     },
   });
 
