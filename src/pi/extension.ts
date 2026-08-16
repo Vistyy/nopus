@@ -5,6 +5,7 @@ import { evaluateProse, type ProseEvaluation } from "../evaluate-prose.js";
 import { buildRewriteInstruction } from "../hook/handle-stop.js";
 
 const CUSTOM_TYPE = "nopus-rewrite";
+const HIDDEN_RESPONSE_MARKER = "<!-- nopus:hidden-original-response -->\n";
 
 type AssistantLike = {
   role?: unknown;
@@ -17,7 +18,10 @@ function textFromAssistant(message: AssistantLike): string | undefined {
   const text = message.content.flatMap((block) => {
     if (typeof block !== "object" || block === null) return [];
     const value = block as { type?: unknown; text?: unknown };
-    return value.type === "text" && typeof value.text === "string" ? [value.text] : [];
+    if (value.type !== "text" || typeof value.text !== "string") return [];
+    return [value.text.startsWith(HIDDEN_RESPONSE_MARKER)
+      ? value.text.slice(HIDDEN_RESPONSE_MARKER.length)
+      : value.text];
   }).join("\n").trim();
   return text.length === 0 ? undefined : text;
 }
@@ -44,8 +48,29 @@ function evaluationSummary(evaluation: ProseEvaluation): string {
   return `nopus recommends a rewrite (${evaluation.signals.join(", ")}).`;
 }
 
+function stripHiddenResponseMarker<T>(message: T): T {
+  if (typeof message !== "object" || message === null) return message;
+  const value = message as { role?: unknown; content?: unknown };
+  if (value.role !== "assistant" || !Array.isArray(value.content)) return message;
+  return {
+    ...value,
+    content: value.content.map((block) => {
+      if (typeof block !== "object" || block === null) return block;
+      const content = block as { type?: unknown; text?: unknown };
+      if (content.type !== "text" || typeof content.text !== "string" || !content.text.startsWith(HIDDEN_RESPONSE_MARKER)) {
+        return block;
+      }
+      return { ...content, text: content.text.slice(HIDDEN_RESPONSE_MARKER.length) };
+    }),
+  } as T;
+}
+
 export default function nopusExtension(pi: ExtensionAPI): void {
-  let config: NopusConfig = { complexitySensitivity: "medium", includeEvidence: true };
+  let config: NopusConfig = {
+    complexitySensitivity: "medium",
+    includeEvidence: true,
+    pi: { hideOriginalResponse: true },
+  };
   let active = true;
   let rewriteQueued = false;
 
@@ -67,6 +92,13 @@ export default function nopusExtension(pi: ExtensionAPI): void {
     notify();
   };
 
+  pi.registerMarkdownTransformer((markdown, context) => {
+    if (config.pi.hideOriginalResponse && context.messageType === "assistant" && markdown.startsWith(HIDDEN_RESPONSE_MARKER)) {
+      return "";
+    }
+    return markdown;
+  });
+
   pi.registerCommand("nopus", {
     description: "Inspect, configure, or toggle nopus prose rewrites",
     handler: async (rawArgs, ctx) => {
@@ -75,7 +107,7 @@ export default function nopusExtension(pi: ExtensionAPI): void {
 
       if (action === "status") {
         ctx.ui.notify(
-          `nopus is ${active ? "on" : "off"}; sensitivity ${config.complexitySensitivity}; evidence ${config.includeEvidence ? "on" : "off"}.`,
+          `nopus is ${active ? "on" : "off"}; sensitivity ${config.complexitySensitivity}; evidence ${config.includeEvidence ? "on" : "off"}; hide original ${config.pi.hideOriginalResponse ? "on" : "off"}.`,
           "info",
         );
         return;
@@ -95,7 +127,7 @@ export default function nopusExtension(pi: ExtensionAPI): void {
         ctx.ui.notify(evaluationSummary(evaluation), evaluation.retry ? "warning" : "info");
         return;
       }
-      if (action === "evidence" || action === "sensitivity" || action === "low" || action === "medium" || action === "high") {
+      if (action === "evidence" || action === "hide-original" || action === "sensitivity" || action === "low" || action === "medium" || action === "high") {
         try {
           const update = updateNopusConfig(args);
           config = update.config;
@@ -105,7 +137,7 @@ export default function nopusExtension(pi: ExtensionAPI): void {
         }
         return;
       }
-      ctx.ui.notify("Usage: /nopus [status|on|off|check|low|medium|high|sensitivity LEVEL|evidence on|off]", "warning");
+      ctx.ui.notify("Usage: /nopus [status|on|off|check|low|medium|high|sensitivity LEVEL|evidence on|off|hide-original on|off]", "warning");
     },
   });
 
@@ -120,14 +152,25 @@ export default function nopusExtension(pi: ExtensionAPI): void {
     }
   });
 
-  pi.on("agent_end", async (event, ctx) => {
+  pi.on("message_end", async (event, ctx) => {
     if (!active || rewriteQueued) return;
-    const text = latestAssistantText(event.messages);
+    const text = textFromAssistant(event.message);
     if (text === undefined) return;
     const evaluation = evaluate(text);
-    if (evaluation.retry) {
-      queueRewrite(evaluation, () => ctx.ui.notify("nopus requested a clearer rewrite.", "info"));
-    }
+    if (!evaluation.retry) return;
+
+    queueRewrite(evaluation, () => ctx.ui.notify("nopus requested a clearer rewrite.", "info"));
+    if (!config.pi.hideOriginalResponse || event.message.role !== "assistant") return;
+    return {
+      message: {
+        ...event.message,
+        content: event.message.content.map((block) =>
+          block.type === "text" && block.text.length > 0
+            ? { ...block, text: `${HIDDEN_RESPONSE_MARKER}${block.text}` }
+            : block
+        ),
+      },
+    };
   });
 
   pi.on("agent_settled", async () => {
@@ -146,9 +189,9 @@ export default function nopusExtension(pi: ExtensionAPI): void {
       }
     }
     return {
-      messages: event.messages.filter((message, index) =>
-        !isRewriteMessage(message) || index === latestRewriteIndex
-      ),
+      messages: event.messages
+        .filter((message, index) => !isRewriteMessage(message) || index === latestRewriteIndex)
+        .map(stripHiddenResponseMarker),
     };
   });
 }

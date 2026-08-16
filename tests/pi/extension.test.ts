@@ -1,9 +1,17 @@
 import assert from "node:assert/strict";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import nopusExtension, { latestAssistantText } from "../../src/pi/extension.js";
 
 type Handler = (event: any, context: any) => Promise<any> | any;
+type MarkdownTransformer = (markdown: string, context: {
+  messageType: "user" | "assistant" | "assistant-thinking";
+  isStreaming: boolean;
+  availableWidth: number;
+}) => string;
 
 function assistant(text: string, stopReason = "stop") {
   return {
@@ -17,6 +25,7 @@ function extensionHarness() {
   const handlers = new Map<string, Handler>();
   const messages: Array<{ message: any; options: any }> = [];
   const commands = new Map<string, any>();
+  let markdownTransformer: MarkdownTransformer | undefined;
   const pi = {
     on(name: string, handler: Handler) {
       handlers.set(name, handler);
@@ -24,12 +33,15 @@ function extensionHarness() {
     registerCommand(name: string, command: any) {
       commands.set(name, command);
     },
+    registerMarkdownTransformer(transformer: MarkdownTransformer) {
+      markdownTransformer = transformer;
+    },
     sendMessage(message: any, options: any) {
       messages.push({ message, options });
     },
   } as unknown as ExtensionAPI;
   nopusExtension(pi);
-  return { handlers, messages, commands };
+  return { handlers, messages, commands, getMarkdownTransformer: () => markdownTransformer };
 }
 
 const difficult = [
@@ -38,6 +50,12 @@ const difficult = [
   "Authority approval requires explicit evidence.",
   "Explicit authority requires approval evidence.",
 ].join(" ");
+
+const renderContext = {
+  messageType: "assistant" as const,
+  isStreaming: false,
+  availableWidth: 80,
+};
 
 test("extracts only a completed assistant response", () => {
   assert.equal(latestAssistantText([
@@ -51,7 +69,7 @@ test("extracts only a completed assistant response", () => {
   }]), undefined);
 });
 
-test("queues exactly one hidden rewrite continuation and shows an informational message before Pi settles", async () => {
+test("hides a rejected response and queues exactly one rewrite before Pi settles", async () => {
   const harness = extensionHarness();
   const notifications: Array<{ message: string; level: string }> = [];
   const context = {
@@ -61,9 +79,8 @@ test("queues exactly one hidden rewrite continuation and shows an informational 
       },
     },
   };
-  await harness.handlers.get("session_start")?.({}, context);
-  await harness.handlers.get("agent_end")?.({ messages: [assistant(difficult)] }, context);
-  await harness.handlers.get("agent_end")?.({ messages: [assistant(difficult)] }, context);
+  const first = await harness.handlers.get("message_end")?.({ message: assistant(difficult) }, context);
+  await harness.handlers.get("message_end")?.({ message: assistant(difficult) }, context);
 
   assert.equal(harness.messages.length, 1);
   assert.deepEqual(notifications, [{ message: "nopus requested a clearer rewrite.", level: "info" }]);
@@ -71,9 +88,53 @@ test("queues exactly one hidden rewrite continuation and shows an informational 
   assert.equal(harness.messages[0]?.message.display, false);
   assert.deepEqual(harness.messages[0]?.options, { deliverAs: "followUp", triggerTurn: true });
 
+  const markedText = first.message.content[0].text;
+  assert.match(markedText, /^<!-- nopus:hidden-original-response -->/);
+  assert.equal(harness.getMarkdownTransformer()?.(markedText, renderContext), "");
+  assert.equal(harness.getMarkdownTransformer()?.("ordinary response", renderContext), "ordinary response");
+  assert.equal(harness.getMarkdownTransformer()?.(markedText, { ...renderContext, messageType: "user" }), markedText);
+
   await harness.handlers.get("agent_settled")?.({}, context);
-  await harness.handlers.get("agent_end")?.({ messages: [assistant(difficult)] }, context);
+  await harness.handlers.get("message_end")?.({ message: assistant(difficult) }, context);
   assert.equal(harness.messages.length, 2);
+});
+
+test("can keep the rejected response visible while still requesting a rewrite", async () => {
+  const previousPath = process.env.NOPUS_CONFIG;
+  process.env.NOPUS_CONFIG = join(mkdtempSync(join(tmpdir(), "nopus-pi-test-")), "config.json");
+  try {
+    const harness = extensionHarness();
+    await harness.commands.get("nopus").handler("hide-original off", { ui: { notify() {} } });
+    const replacement = await harness.handlers.get("message_end")?.(
+      { message: assistant(difficult) },
+      { ui: { notify() {} } },
+    );
+    assert.equal(replacement, undefined);
+    assert.equal(harness.messages.length, 1);
+    const markedText = `<!-- nopus:hidden-original-response -->\n${difficult}`;
+    assert.equal(harness.getMarkdownTransformer()?.(markedText, renderContext), markedText);
+  } finally {
+    if (previousPath === undefined) delete process.env.NOPUS_CONFIG;
+    else process.env.NOPUS_CONFIG = previousPath;
+  }
+});
+
+test("keeps the rejected response text in model context without the display marker", async () => {
+  const harness = extensionHarness();
+  const replacement = await harness.handlers.get("message_end")?.(
+    { message: assistant(difficult) },
+    { ui: { notify() {} } },
+  );
+  const current = { role: "custom", customType: "nopus-rewrite", content: "current" };
+  const result = await harness.handlers.get("context")?.({
+    messages: [
+      { role: "custom", customType: "nopus-rewrite", content: "old" },
+      replacement.message,
+      current,
+    ],
+  }, {});
+
+  assert.deepEqual(result.messages, [assistant(difficult), current]);
 });
 
 test("removes old rewrite instructions from later model context", async () => {
@@ -85,20 +146,6 @@ test("removes old rewrite instructions from later model context", async () => {
     ],
   }, {});
   assert.deepEqual(result.messages, [{ role: "user", content: "next" }]);
-});
-
-test("keeps only the current instruction during a rewrite", async () => {
-  const harness = extensionHarness();
-  await harness.handlers.get("agent_end")?.({ messages: [assistant(difficult)] }, { ui: { notify() {} } });
-  const current = { role: "custom", customType: "nopus-rewrite", content: "current" };
-  const result = await harness.handlers.get("context")?.({
-    messages: [
-      { role: "custom", customType: "nopus-rewrite", content: "old" },
-      { role: "user", content: "next" },
-      current,
-    ],
-  }, {});
-  assert.deepEqual(result.messages, [{ role: "user", content: "next" }, current]);
 });
 
 test("registers the nopus command", () => {

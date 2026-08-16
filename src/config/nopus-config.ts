@@ -6,6 +6,9 @@ import type { ComplexitySensitivity } from "../policy/decide-rewrite.js";
 export type NopusConfig = {
   complexitySensitivity: ComplexitySensitivity;
   includeEvidence: boolean;
+  pi: {
+    hideOriginalResponse: boolean;
+  };
 };
 
 export function parseComplexitySensitivity(value: unknown, source: string): ComplexitySensitivity {
@@ -34,6 +37,10 @@ export function readNopusConfig(path: string = defaultConfigPath()): NopusConfig
     throw new Error(`${path} must contain a JSON object`);
   }
   const object = value as Record<string, unknown>;
+  if (object.pi !== undefined && (typeof object.pi !== "object" || object.pi === null || Array.isArray(object.pi))) {
+    throw new Error(`${path}: pi must be a JSON object`);
+  }
+  const pi = object.pi as Record<string, unknown> | undefined;
   return {
     complexitySensitivity: object.complexitySensitivity === undefined
       ? "medium"
@@ -41,6 +48,11 @@ export function readNopusConfig(path: string = defaultConfigPath()): NopusConfig
     includeEvidence: object.includeEvidence === undefined
       ? true
       : parseIncludeEvidence(object.includeEvidence, `${path}: includeEvidence`),
+    pi: {
+      hideOriginalResponse: pi?.hideOriginalResponse === undefined
+        ? true
+        : parseIncludeEvidence(pi.hideOriginalResponse, `${path}: pi.hideOriginalResponse`),
+    },
   };
 }
 
@@ -48,6 +60,7 @@ export function configuredNopusConfig(environment: NodeJS.ProcessEnv = process.e
   const file = readNopusConfig(defaultConfigPath(environment));
   const explicitSensitivity = environment.NOPUS_COMPLEXITY_SENSITIVITY;
   const explicitEvidence = environment.NOPUS_INCLUDE_EVIDENCE;
+  const explicitPiHiding = environment.NOPUS_PI_HIDE_ORIGINAL_RESPONSE;
 
   return {
     complexitySensitivity: explicitSensitivity !== undefined
@@ -56,5 +69,10 @@ export function configuredNopusConfig(environment: NodeJS.ProcessEnv = process.e
     includeEvidence: explicitEvidence !== undefined
       ? parseIncludeEvidence(explicitEvidence, "NOPUS_INCLUDE_EVIDENCE")
       : file?.includeEvidence ?? true,
+    pi: {
+      hideOriginalResponse: explicitPiHiding !== undefined
+        ? parseIncludeEvidence(explicitPiHiding, "NOPUS_PI_HIDE_ORIGINAL_RESPONSE")
+        : file?.pi.hideOriginalResponse ?? true,
+    },
   };
 }

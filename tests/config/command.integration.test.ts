@@ -17,6 +17,7 @@ test("the bundled configuration command writes persistent user configuration", (
   assert.deepEqual(JSON.parse(readFileSync(path, "utf8")), {
     complexitySensitivity: "medium",
     includeEvidence: true,
+    pi: { hideOriginalResponse: true },
   });
   assert.match(result.stdout, /complexity sensitivity is medium/);
 
@@ -28,8 +29,21 @@ test("the bundled configuration command writes persistent user configuration", (
   assert.deepEqual(JSON.parse(readFileSync(path, "utf8")), {
     complexitySensitivity: "medium",
     includeEvidence: false,
+    pi: { hideOriginalResponse: true },
   });
   assert.match(evidence.stdout, /rewrite evidence is off/);
+
+  const hideOriginal = spawnSync(process.execPath, [command, "hide-original", "off"], {
+    encoding: "utf8",
+    env: { ...process.env, NOPUS_CONFIG: path },
+  });
+  assert.equal(hideOriginal.status, 0, hideOriginal.stderr);
+  assert.deepEqual(JSON.parse(readFileSync(path, "utf8")), {
+    complexitySensitivity: "medium",
+    includeEvidence: false,
+    pi: { hideOriginalResponse: false },
+  });
+  assert.match(hideOriginal.stdout, /Pi response hiding is off/);
 });
 
 test("the bundled configuration command rejects unknown levels", () => {

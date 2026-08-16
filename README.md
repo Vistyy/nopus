@@ -36,6 +36,9 @@ pi install git:github.com/Vistyy/nopus
 
 Start Pi normally after installation.
 The extension checks each completed response.
+When it requests a rewrite, it hides the rejected response from the terminal transcript by default.
+The response remains in the Pi session and model history.
+Because nopus evaluates completed responses, the response remains visible while it streams and disappears only after nopus requests a rewrite.
 Use these commands while working:
 
 ```text
@@ -43,6 +46,8 @@ Use these commands while working:
 /nopus check
 /nopus on
 /nopus off
+/nopus hide-original on
+/nopus hide-original off
 ```
 
 </details>
@@ -160,13 +165,14 @@ The [observed rates](evaluation/README.md) come from 5,337 completed Pi response
 
 ## Configure automatic rewrites
 
-`nopus-configure` changes the sensitivity and rewrite-evidence settings used by the automatic integrations.
+`nopus-configure` changes the settings used by the automatic integrations.
 It does not rewrite a response.
 
 | Action | Pi | Claude Code | Codex |
 |---|---|---|---|
 | Set medium sensitivity | `/skill:nopus-configure medium` | `/nopus:nopus-configure medium` | `$nopus-configure medium` |
 | Disable rewrite evidence | `/skill:nopus-configure evidence off` | `/nopus:nopus-configure evidence off` | `$nopus-configure evidence off` |
+| Show rejected Pi responses | `/skill:nopus-configure hide-original off` | - | - |
 
 <details>
 <summary>Configuration file and environment variables</summary>
@@ -176,12 +182,15 @@ The configuration skill writes `$XDG_CONFIG_HOME/nopus/config.json`, or the plat
 ```json
 {
   "complexitySensitivity": "medium",
-  "includeEvidence": true
+  "includeEvidence": true,
+  "pi": {
+    "hideOriginalResponse": true
+  }
 }
 ```
 
-Rewrite evidence is enabled by default.
-`NOPUS_COMPLEXITY_SENSITIVITY` and `NOPUS_INCLUDE_EVIDENCE` override the configuration file for automation.
+Rewrite evidence and Pi response hiding are enabled by default.
+`NOPUS_COMPLEXITY_SENSITIVITY`, `NOPUS_INCLUDE_EVIDENCE`, and `NOPUS_PI_HIDE_ORIGINAL_RESPONSE` override the configuration file for automation.
 
 </details>
 
