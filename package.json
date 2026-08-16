@@ -43,7 +43,8 @@
     "evaluate:parity": "tsx evaluation/src/run.ts",
     "evaluate:review": "tsx evaluation/src/build-label-review.ts",
     "evaluate:pi-corpus": "tsx evaluation/src/pi-corpus.ts",
-    "evaluate:pi-review": "tsx evaluation/src/build-pi-corpus-review.ts"
+    "evaluate:pi-review": "tsx evaluation/src/build-pi-corpus-review.ts",
+    "evaluate:rewrite-model": "tsx evaluation/src/rewrite-model-eval.ts"
   },
   "devDependencies": {
     "@anthropic-ai/claude-code": "2.1.232",

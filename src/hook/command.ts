@@ -8,7 +8,7 @@ for await (const chunk of process.stdin) source += chunk;
 try {
   const input = JSON.parse(source) as StopHookInput;
   const config = configuredNopusConfig();
-  const output = handleStop(input, config.complexitySensitivity, config.includeEvidence);
+  const output = handleStop(input, config.complexitySensitivity, config.includeEvidence, config.extraSimple);
   process.stdout.write(`${JSON.stringify(output)}\n`);
 } catch (error) {
   process.stderr.write(`nopus Stop hook failed: ${error instanceof Error ? error.message : String(error)}\n`);

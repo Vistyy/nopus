@@ -22,6 +22,7 @@ function runHook(input: unknown, environment: NodeJS.ProcessEnv = {}) {
       NOPUS_CONFIG: join(tmpdir(), `nopus-missing-${process.pid}.json`),
       NOPUS_COMPLEXITY_SENSITIVITY: undefined,
       NOPUS_INCLUDE_EVIDENCE: undefined,
+      NOPUS_EXTRA_SIMPLE: undefined,
       ...environment,
     },
   });
@@ -48,6 +49,17 @@ test("the bundled command applies configured complexity sensitivity", () => {
   assert.equal(result.status, 0, result.stderr);
   const output = JSON.parse(result.stdout) as { decision?: unknown };
   assert.equal(output.decision, "block");
+});
+
+test("the bundled command applies extra-simple rewrite instructions", () => {
+  const result = runHook({
+    hook_event_name: "Stop",
+    last_assistant_message: difficult,
+    stop_hook_active: false,
+  }, { NOPUS_EXTRA_SIMPLE: "true" });
+  assert.equal(result.status, 0, result.stderr);
+  const output = JSON.parse(result.stdout) as { reason?: unknown };
+  assert.match(String(output.reason), /short, simple answer to the user's current request/);
 });
 
 test("the bundled command reads persistent nopus configuration", () => {

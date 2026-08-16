@@ -17,6 +17,7 @@ test("the bundled configuration command writes persistent user configuration", (
   assert.deepEqual(JSON.parse(readFileSync(path, "utf8")), {
     complexitySensitivity: "medium",
     includeEvidence: true,
+    extraSimple: false,
     pi: { hideOriginalResponse: true },
   });
   assert.match(result.stdout, /complexity sensitivity is medium/);
@@ -29,9 +30,23 @@ test("the bundled configuration command writes persistent user configuration", (
   assert.deepEqual(JSON.parse(readFileSync(path, "utf8")), {
     complexitySensitivity: "medium",
     includeEvidence: false,
+    extraSimple: false,
     pi: { hideOriginalResponse: true },
   });
   assert.match(evidence.stdout, /rewrite evidence is off/);
+
+  const extraSimple = spawnSync(process.execPath, [command, "extra-simple", "on"], {
+    encoding: "utf8",
+    env: { ...process.env, NOPUS_CONFIG: path },
+  });
+  assert.equal(extraSimple.status, 0, extraSimple.stderr);
+  assert.deepEqual(JSON.parse(readFileSync(path, "utf8")), {
+    complexitySensitivity: "medium",
+    includeEvidence: false,
+    extraSimple: true,
+    pi: { hideOriginalResponse: true },
+  });
+  assert.match(extraSimple.stdout, /extra-simple rewrites are on/);
 
   const hideOriginal = spawnSync(process.execPath, [command, "hide-original", "off"], {
     encoding: "utf8",
@@ -41,6 +56,7 @@ test("the bundled configuration command writes persistent user configuration", (
   assert.deepEqual(JSON.parse(readFileSync(path, "utf8")), {
     complexitySensitivity: "medium",
     includeEvidence: false,
+    extraSimple: true,
     pi: { hideOriginalResponse: false },
   });
   assert.match(hideOriginal.stdout, /Pi response hiding is off/);

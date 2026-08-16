@@ -69,6 +69,7 @@ export default function nopusExtension(pi: ExtensionAPI): void {
   let config: NopusConfig = {
     complexitySensitivity: "medium",
     includeEvidence: true,
+    extraSimple: false,
     pi: { hideOriginalResponse: true },
   };
   let active = true;
@@ -82,7 +83,7 @@ export default function nopusExtension(pi: ExtensionAPI): void {
     rewriteQueued = true;
     pi.sendMessage({
       customType: CUSTOM_TYPE,
-      content: buildRewriteInstruction(evaluation, config.includeEvidence),
+      content: buildRewriteInstruction(evaluation, config.includeEvidence, config.extraSimple),
       display: false,
       details: { signals: evaluation.signals },
     }, {
@@ -107,7 +108,7 @@ export default function nopusExtension(pi: ExtensionAPI): void {
 
       if (action === "status") {
         ctx.ui.notify(
-          `nopus is ${active ? "on" : "off"}; sensitivity ${config.complexitySensitivity}; evidence ${config.includeEvidence ? "on" : "off"}; hide original ${config.pi.hideOriginalResponse ? "on" : "off"}.`,
+          `nopus is ${active ? "on" : "off"}; sensitivity ${config.complexitySensitivity}; evidence ${config.includeEvidence ? "on" : "off"}; extra simple ${config.extraSimple ? "on" : "off"}; hide original ${config.pi.hideOriginalResponse ? "on" : "off"}.`,
           "info",
         );
         return;
@@ -127,7 +128,7 @@ export default function nopusExtension(pi: ExtensionAPI): void {
         ctx.ui.notify(evaluationSummary(evaluation), evaluation.retry ? "warning" : "info");
         return;
       }
-      if (action === "evidence" || action === "hide-original" || action === "sensitivity" || action === "low" || action === "medium" || action === "high") {
+      if (action === "evidence" || action === "extra-simple" || action === "hide-original" || action === "sensitivity" || action === "low" || action === "medium" || action === "high") {
         try {
           const update = updateNopusConfig(args);
           config = update.config;
@@ -137,7 +138,7 @@ export default function nopusExtension(pi: ExtensionAPI): void {
         }
         return;
       }
-      ctx.ui.notify("Usage: /nopus [status|on|off|check|low|medium|high|sensitivity LEVEL|evidence on|off|hide-original on|off]", "warning");
+      ctx.ui.notify("Usage: /nopus [status|on|off|check|low|medium|high|sensitivity LEVEL|evidence on|off|extra-simple on|off|hide-original on|off]", "warning");
     },
   });
 

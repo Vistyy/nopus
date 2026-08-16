@@ -6,6 +6,7 @@ import type { ComplexitySensitivity } from "../policy/decide-rewrite.js";
 export type NopusConfig = {
   complexitySensitivity: ComplexitySensitivity;
   includeEvidence: boolean;
+  extraSimple: boolean;
   pi: {
     hideOriginalResponse: boolean;
   };
@@ -48,6 +49,9 @@ export function readNopusConfig(path: string = defaultConfigPath()): NopusConfig
     includeEvidence: object.includeEvidence === undefined
       ? true
       : parseIncludeEvidence(object.includeEvidence, `${path}: includeEvidence`),
+    extraSimple: object.extraSimple === undefined
+      ? false
+      : parseIncludeEvidence(object.extraSimple, `${path}: extraSimple`),
     pi: {
       hideOriginalResponse: pi?.hideOriginalResponse === undefined
         ? true
@@ -60,6 +64,7 @@ export function configuredNopusConfig(environment: NodeJS.ProcessEnv = process.e
   const file = readNopusConfig(defaultConfigPath(environment));
   const explicitSensitivity = environment.NOPUS_COMPLEXITY_SENSITIVITY;
   const explicitEvidence = environment.NOPUS_INCLUDE_EVIDENCE;
+  const explicitExtraSimple = environment.NOPUS_EXTRA_SIMPLE;
   const explicitPiHiding = environment.NOPUS_PI_HIDE_ORIGINAL_RESPONSE;
 
   return {
@@ -69,6 +74,9 @@ export function configuredNopusConfig(environment: NodeJS.ProcessEnv = process.e
     includeEvidence: explicitEvidence !== undefined
       ? parseIncludeEvidence(explicitEvidence, "NOPUS_INCLUDE_EVIDENCE")
       : file?.includeEvidence ?? true,
+    extraSimple: explicitExtraSimple !== undefined
+      ? parseIncludeEvidence(explicitExtraSimple, "NOPUS_EXTRA_SIMPLE")
+      : file?.extraSimple ?? false,
     pi: {
       hideOriginalResponse: explicitPiHiding !== undefined
         ? parseIncludeEvidence(explicitPiHiding, "NOPUS_PI_HIDE_ORIGINAL_RESPONSE")

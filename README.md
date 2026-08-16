@@ -46,6 +46,8 @@ Use these commands while working:
 /nopus check
 /nopus on
 /nopus off
+/nopus extra-simple on
+/nopus extra-simple off
 /nopus hide-original on
 /nopus hide-original off
 ```
@@ -151,6 +153,10 @@ Examples from the response:
 Turning rewrite evidence off removes the `Examples from the response` block.
 The agent still receives the rewrite instructions and focus areas.
 
+Extra-simple rewriting is off by default.
+When enabled, nopus requests a short initial answer that keeps the main conclusion, immediate action, and conditions or warnings that could change that action.
+It leaves supporting rationale, examples, alternatives, future considerations, and lower-priority implementation details for follow-up.
+
 ## Choose how sensitive it should be
 
 Sensitivity controls how often nopus intervenes, and the default is `medium`.
@@ -172,6 +178,7 @@ It does not rewrite a response.
 |---|---|---|---|
 | Set medium sensitivity | `/skill:nopus-configure medium` | `/nopus:nopus-configure medium` | `$nopus-configure medium` |
 | Disable rewrite evidence | `/skill:nopus-configure evidence off` | `/nopus:nopus-configure evidence off` | `$nopus-configure evidence off` |
+| Enable extra-simple rewrites | `/skill:nopus-configure extra-simple on` | `/nopus:nopus-configure extra-simple on` | `$nopus-configure extra-simple on` |
 | Show rejected Pi responses | `/skill:nopus-configure hide-original off` | - | - |
 
 <details>
@@ -183,6 +190,7 @@ The configuration skill writes `$XDG_CONFIG_HOME/nopus/config.json`, or the plat
 {
   "complexitySensitivity": "medium",
   "includeEvidence": true,
+  "extraSimple": false,
   "pi": {
     "hideOriginalResponse": true
   }
@@ -190,7 +198,8 @@ The configuration skill writes `$XDG_CONFIG_HOME/nopus/config.json`, or the plat
 ```
 
 Rewrite evidence and Pi response hiding are enabled by default.
-`NOPUS_COMPLEXITY_SENSITIVITY`, `NOPUS_INCLUDE_EVIDENCE`, and `NOPUS_PI_HIDE_ORIGINAL_RESPONSE` override the configuration file for automation.
+Extra-simple rewriting is disabled by default.
+`NOPUS_COMPLEXITY_SENSITIVITY`, `NOPUS_INCLUDE_EVIDENCE`, `NOPUS_EXTRA_SIMPLE`, and `NOPUS_PI_HIDE_ORIGINAL_RESPONSE` override the configuration file for automation.
 
 </details>
 

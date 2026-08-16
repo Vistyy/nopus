@@ -19,6 +19,7 @@ test("uses the default configuration when no file exists", () => {
   assert.deepEqual(configuredNopusConfig({ NOPUS_CONFIG: path }), {
     complexitySensitivity: "medium",
     includeEvidence: true,
+    extraSimple: false,
     pi: defaultPiConfig,
   });
 
@@ -26,6 +27,7 @@ test("uses the default configuration when no file exists", () => {
   assert.deepEqual(readNopusConfig(path), {
     complexitySensitivity: "medium",
     includeEvidence: false,
+    extraSimple: false,
     pi: defaultPiConfig,
   });
 });
@@ -39,11 +41,13 @@ test("reads Pi response hiding and defaults omitted settings", () => {
   assert.deepEqual(readNopusConfig(path), {
     complexitySensitivity: "medium",
     includeEvidence: true,
+    extraSimple: false,
     pi: { hideOriginalResponse: false },
   });
   assert.deepEqual(configuredNopusConfig({ NOPUS_CONFIG: path }), {
     complexitySensitivity: "medium",
     includeEvidence: true,
+    extraSimple: false,
     pi: { hideOriginalResponse: false },
   });
 });
@@ -53,16 +57,19 @@ test("environment settings take precedence over the configuration file", () => {
   writeFileSync(path, `${JSON.stringify({
     complexitySensitivity: "low",
     includeEvidence: true,
+    extraSimple: false,
     pi: { hideOriginalResponse: true },
   })}\n`);
   assert.deepEqual(configuredNopusConfig({
     NOPUS_CONFIG: path,
     NOPUS_COMPLEXITY_SENSITIVITY: "high",
     NOPUS_INCLUDE_EVIDENCE: "false",
+    NOPUS_EXTRA_SIMPLE: "on",
     NOPUS_PI_HIDE_ORIGINAL_RESPONSE: "off",
   }), {
     complexitySensitivity: "high",
     includeEvidence: false,
+    extraSimple: true,
     pi: { hideOriginalResponse: false },
   });
 });
@@ -75,6 +82,9 @@ test("rejects invalid configuration values", () => {
 
   writeFileSync(path, `${JSON.stringify({ includeEvidence: "sometimes" })}\n`);
   assert.throws(() => configuredNopusConfig({ NOPUS_CONFIG: path }), /must be true or false/);
+
+  writeFileSync(path, `${JSON.stringify({ extraSimple: "sometimes" })}\n`);
+  assert.throws(() => configuredNopusConfig({ NOPUS_CONFIG: path }), /extraSimple must be true or false/);
 
   writeFileSync(path, `${JSON.stringify({ pi: "sometimes" })}\n`);
   assert.throws(() => configuredNopusConfig({ NOPUS_CONFIG: path }), /pi must be a JSON object/);

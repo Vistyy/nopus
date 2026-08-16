@@ -57,6 +57,33 @@ Import accepted labels with this command:
 pnpm evaluate:pi-corpus medium-anchor-labels -- --input PATH
 ```
 
+## Rewrite model evaluation
+
+The rewrite evaluation compares normal and extra-simple instructions on four conversation branches selected from historical turns that the medium policy rewrites.
+It uses historical complex responses to select conversation branches, then asks the requested model to produce a fresh original response and both rewrites from each branch.
+The same model therefore writes the original response and its rewrites with the preceding standard messages available.
+Branches that depend on compaction summaries, branch summaries, or non-Nopus custom messages are excluded.
+The default is `openai-codex/gpt-5.6-luna` with medium thinking.
+Run it only when sending the selected private session text to that provider is approved.
+
+```sh
+pnpm evaluate:rewrite-model
+```
+
+Use `--sessions PATH`, `--root PATH`, or `--model PROVIDER/MODEL` to override the defaults.
+Each run records a private input and instruction manifest, raw rewrites, a text-free policy summary, and a Markdown review document with randomized rewrite labels.
+Reviewers judge whether each rewrite keeps the conclusion, immediate action, and action-changing conditions while deferring only information that can safely wait.
+Private results are written under `$XDG_STATE_HOME/nopus/evaluation/pi-corpus/v1/rewrite-model-eval`, or the platform state-directory equivalent.
+The directory and its contents must not be committed.
+
+A 2026-08-16 contextual Luna run tried 12 historical branches and produced four original responses that the medium policy selected for rewriting.
+The normal rewrite passed the medium policy in two cases, and the extra-simple rewrite passed it in three.
+The extra-simple responses reduced 279 words to 45, 287 words to 106, and 435 words to 156 in the three substantial examples.
+Human review of conclusion, action, conditions, and acceptable omissions remains required.
+
+An earlier experiment evaluated one-to-one detail preservation from only the latest user request and response.
+That experiment tested a superseded meaning of extra-simple rewriting and is not evidence for the current behavior.
+
 ## Optional privacy filtering
 
 OpenAI Privacy Filter can preprocess private response text before review.

@@ -104,6 +104,7 @@ test("can keep the rejected response visible while still requesting a rewrite", 
   process.env.NOPUS_CONFIG = join(mkdtempSync(join(tmpdir(), "nopus-pi-test-")), "config.json");
   try {
     const harness = extensionHarness();
+    await harness.commands.get("nopus").handler("extra-simple on", { ui: { notify() {} } });
     await harness.commands.get("nopus").handler("hide-original off", { ui: { notify() {} } });
     const replacement = await harness.handlers.get("message_end")?.(
       { message: assistant(difficult) },
@@ -111,6 +112,7 @@ test("can keep the rejected response visible while still requesting a rewrite", 
     );
     assert.equal(replacement, undefined);
     assert.equal(harness.messages.length, 1);
+    assert.match(String(harness.messages[0]?.message.content), /short, simple answer to the user's current request/);
     const markedText = `<!-- nopus:hidden-original-response -->\n${difficult}`;
     assert.equal(harness.getMarkdownTransformer()?.(markedText, renderContext), markedText);
   } finally {

@@ -50,6 +50,21 @@ test("can omit response evidence while retaining rewrite guidance", () => {
   }
 });
 
+test("can request a complete extra-simple rewrite", () => {
+  const output = handleStop({
+    hook_event_name: "Stop",
+    last_assistant_message: difficult,
+  }, "medium", true, true);
+  assert.equal(output.decision, "block");
+  if (output.decision === "block") {
+    assert.match(output.reason, /too detailed for an initial answer/);
+    assert.match(output.reason, /short, simple answer to the user's current request/);
+    assert.match(output.reason, /main conclusion, the immediate next action/);
+    assert.match(output.reason, /Leave supporting rationale, examples, alternatives, future considerations/);
+    assert.match(output.reason, /not the only text that may need revision/);
+  }
+});
+
 test("accepts a direct response", () => {
   assert.deepEqual(handleStop({
     hook_event_name: "Stop",

@@ -37,7 +37,11 @@ function evidenceFor(evaluation: ProseEvaluation): string[] {
   }).slice(0, 3);
 }
 
-export function buildRewriteInstruction(evaluation: ProseEvaluation, includeEvidence: boolean): string {
+export function buildRewriteInstruction(
+  evaluation: ProseEvaluation,
+  includeEvidence: boolean,
+  extraSimple = false,
+): string {
   const areas = new Set<string>();
   for (const signal of evaluation.signals) {
     if (signal === "sustained-abstractness" || signal === "combined-complexity" || signal === "concentrated-complexity" ||
@@ -53,6 +57,24 @@ export function buildRewriteInstruction(evaluation: ProseEvaluation, includeEvid
     if (signal === "style-cues") areas.add("Replace formulaic framing with plain statements.");
   }
   const evidence = includeEvidence ? evidenceFor(evaluation) : [];
+  if (extraSimple) {
+    return [
+      "The previous response was too detailed for an initial answer.",
+      "",
+      "Rewrite it as a short, simple answer to the user's current request.",
+      "",
+      "Keep the main conclusion, the immediate next action, and any condition or warning that could change that action.",
+      "Include commands or technical identifiers only when the user needs them now.",
+      "Leave supporting rationale, examples, alternatives, future considerations, and lower-priority implementation details for follow-up.",
+      "",
+      "Use familiar words, direct verbs, and short concrete sentences.",
+      "Return only the revised response.",
+      ...(areas.size === 0 ? [] : ["", "Focus on these areas:", ...[...areas].map((area) => `- ${area}`)]),
+      ...(evidence.length === 0
+        ? []
+        : ["", "These examples identify problems, but they are not the only text that may need revision:", ...evidence]),
+    ].join("\n");
+  }
   return [
     "Rewrite the response for clarity and directness.",
     "Keep its meaning and necessary detail.",
@@ -66,6 +88,7 @@ export function handleStop(
   input: StopHookInput,
   complexitySensitivity: ComplexitySensitivity = "medium",
   includeEvidence = true,
+  extraSimple = false,
 ): StopHookOutput {
   if (input.hook_event_name !== "Stop" || input.stop_hook_active === true) return {};
   if (typeof input.last_assistant_message !== "string") return {};
@@ -73,7 +96,7 @@ export function handleStop(
   return evaluation.retry
     ? {
       decision: "block",
-      reason: buildRewriteInstruction(evaluation, includeEvidence),
+      reason: buildRewriteInstruction(evaluation, includeEvidence, extraSimple),
       systemMessage: "nopus requested a clearer rewrite.",
     }
     : {};

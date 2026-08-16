@@ -21,6 +21,7 @@ export function updateNopusConfig(
   const config: NopusConfig = readNopusConfig(path) ?? {
     complexitySensitivity: "medium",
     includeEvidence: true,
+    extraSimple: false,
     pi: { hideOriginalResponse: true },
   };
   const [first, second] = args;
@@ -29,6 +30,9 @@ export function updateNopusConfig(
   if (first === "evidence") {
     config.includeEvidence = parseIncludeEvidence(second, "include evidence");
     confirmation = `nopus rewrite evidence is ${config.includeEvidence ? "on" : "off"}.`;
+  } else if (first === "extra-simple") {
+    config.extraSimple = parseIncludeEvidence(second, "extra-simple rewrites");
+    confirmation = `nopus extra-simple rewrites are ${config.extraSimple ? "on" : "off"}.`;
   } else if (first === "hide-original") {
     config.pi.hideOriginalResponse = parseIncludeEvidence(second, "hide original Pi response");
     confirmation = `nopus Pi response hiding is ${config.pi.hideOriginalResponse ? "on" : "off"}.`;
