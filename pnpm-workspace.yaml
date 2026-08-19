@@ -1,3 +1,5 @@
+pmOnFail: error
+strictDepBuilds: true
 allowBuilds:
   '@anthropic-ai/claude-code': true
   '@google/genai': false
